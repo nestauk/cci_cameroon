@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -20,7 +21,7 @@ import os
 import scipy
 import tensorflow as tf
 import faiss
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, util
 import requests
 from io import StringIO
 import time
@@ -31,7 +32,7 @@ import time
 
 
 # %%
-# read in dataset from online
+# read in sample text dataset from online
 urls = [
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/MSRpar.train.tsv",
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/MSRpar.test.tsv",
@@ -51,6 +52,23 @@ for url in urls:
     sentences.extend(data[1].tolist())
     sentences.extend(data[2].tolist())
 
+# %% [markdown]
+# # Similarity search - things to consider when choosing an approach
+#
+# 1. Symetric -> the query is identical to the text stored in length and form. Candidate transformer distilBERT
+# 2. Assymetric -> the query differs from the text stored. Text stored is usually larger than the query. This is the category into which our task falls.
+#
+# Questions for team:
+#
+# 1. do we consider this problem a symetric or assymetric one? I guess assymetric because we do not have control over the size of rumours created?
+#
+# 2. With concerns on having rumours in the database in both English and French, do we train separate models to handle this?
+#
+# 3. Should we be more concerned with great match of the query or with computation time? This will influence our choice of [FAISS](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes) index to use
+#
+#
+#
+
 # %%
 data.columns
 
@@ -62,8 +80,10 @@ sentences[:10]
 sentences = [word for word in list(set(sentences)) if type(word) is str]
 
 # %%
-# initialize sentence transformer model - using sentence-BERT. Sentence embedding takes time
-model = SentenceTransformer("bert-base-nli-mean-tokens")
+# initialize sentence transformer model - using BERT. Sentence embedding takes time
+model = SentenceTransformer(
+    "bert-base-nli-mean-tokens"
+)  # loading simple pre-trained transformer model for learning purposes
 # create sentence embeddings
 sentence_embeddings = model.encode(sentences)
 sentence_embeddings.shape
@@ -111,10 +131,23 @@ print(position)
 print(distance)
 
 # %%
+print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][0])
+
+# %%
+print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][1])
+
+# %%
 sentences[202]
 
 # %%
 sentences[9133]
+
+# %% [markdown]
+# # Output using the Flat index with L2
+# * Algorithm runs for 5µs and returns top 2 nearest neighbors to the input text.
+# * First text has a similarity index of 57.92
+# * Second output has similarity index of 4.78
+# * Clearly, the sentence with a higher similarity is closer to the input query
 
 # %% [markdown]
 # # Drawback of  IndexFlatL2
@@ -146,6 +179,12 @@ distance, position = index.search(xq, k)  # search
 print(position)
 print(distance)
 
+# %%
+print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][202])
+
+# %%
+print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][9133])
+
 # %% [markdown]
 # # By compressing the vectors, we further improve the computation time
 
@@ -176,16 +215,49 @@ sentences[position[0][0]]
 # %%
 sentences[position[0][1]]
 
-# %% [markdown]
-# ## For the given dataset, we notice that the algorithm returns the same set of indexex. However, when compression of the vectors happens, the indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
-
 # %%
-
-# %%
+print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][1])
 
 # %% [markdown]
-# ## https://www.pinecone.io/learn/faiss-tutorial/
+# ## For the given dataset, we notice that the algorithm returns the same set of indexes. However, when compression of the vectors happens, the indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
 
 # %%
+import pickle
 
 # %%
+# using the distilbert model for embedding
+model2 = SentenceTransformer("distilbert-base-nli-stsb-mean-tokens")
+
+# %%
+# produce sentence vectors
+embeddings = model2.encode(sentences)
+
+# %%
+# create a faiss index for the search using the embenddings
+index_dis = faiss.IndexFlatL2(embeddings.shape[1])
+
+# %%
+index_dis.add(embeddings)  # add the vector to the index created
+
+# %%
+# search the index for our given input xq
+# %time
+distance, position = index_dis.search(xq, k)  # search
+print(position)
+print(distance)
+
+# %%
+sentences[position[0][0]]
+
+# %%
+sentences[position[0][1]]
+
+# %%
+print("Similarity:", util.dot_score(xq[0], embeddings)[0][5323])
+
+# %%
+print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][6622])
+
+# %% [markdown]
+#
+#
