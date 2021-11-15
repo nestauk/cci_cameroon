@@ -32,6 +32,26 @@ import time
 
 
 # %%
+def fetch_data(url_list):
+    """function fetches data to use from a remote source(s).
+    @param: list of urls
+    return: list of sentences. A version that returns a dataframe that holds the rumours and the labels would
+    developed for use."""
+    # we loop through each url and create our sentences data
+    sentences = []
+    for url in urls:
+        res = requests.get(url)
+        # extract to dataframe
+        data = pd.read_csv(
+            StringIO(res.text), sep="\t", header=None, error_bad_lines=False
+        )
+        # add to columns 1 and 2 to sentences list
+        sentences.extend(data[1].tolist())
+        sentences.extend(data[2].tolist())
+    return sentences
+
+
+# %%
 # read in sample text dataset from online
 urls = [
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/MSRpar.train.tsv",
@@ -42,21 +62,13 @@ urls = [
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2014/images.test.tsv",
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2015/images.test.tsv",
 ]
-# we loop through each url and create our sentences data
-sentences = []
-for url in urls:
-    res = requests.get(url)
-    # extract to dataframe
-    data = pd.read_csv(StringIO(res.text), sep="\t", header=None, error_bad_lines=False)
-    # add to columns 1 and 2 to sentences list
-    sentences.extend(data[1].tolist())
-    sentences.extend(data[2].tolist())
+sentences = fetch_data(urls)
 
 # %% [markdown]
 # # Similarity search - things to consider when choosing an approach
 #
 # 1. Symetric -> the query is identical to the text stored in length and form. Candidate transformer distilBERT
-# 2. Assymetric -> the query differs from the text stored. Text stored is usually larger than the query. This is the category into which our task falls.
+# 2. Assymetric -> the query differs from the text stored. Text stored is usually larger than the query. This is the category into which our task falls I guess.
 #
 # Questions for team:
 #
@@ -70,13 +82,10 @@ for url in urls:
 #
 
 # %%
-data.columns
-
-# %%
 sentences[:10]
 
 # %%
-# remove duplicates and NaN
+# preprocessing the sentences fetched by removing duplicates and NaN
 sentences = [word for word in list(set(sentences)) if type(word) is str]
 
 # %%
@@ -131,16 +140,16 @@ print(position)
 print(distance)
 
 # %%
-print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][0])
+print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][3465])
 
 # %%
-print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][1])
+print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][4118])
 
 # %%
-sentences[202]
+sentences[3465]
 
 # %%
-sentences[9133]
+sentences[4118]
 
 # %% [markdown]
 # # Output using the Flat index with L2
@@ -180,10 +189,10 @@ print(position)
 print(distance)
 
 # %%
-print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][202])
+print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][3465])
 
 # %%
-print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][9133])
+print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][4118])
 
 # %% [markdown]
 # # By compressing the vectors, we further improve the computation time
@@ -216,13 +225,19 @@ sentences[position[0][0]]
 sentences[position[0][1]]
 
 # %%
-print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][1])
+print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][position[0][1]])
+
+# %%
 
 # %% [markdown]
 # ## For the given dataset, we notice that the algorithm returns the same set of indexes. However, when compression of the vectors happens, the indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
 
 # %%
 import pickle
+import torch
+
+# %% [markdown]
+# ## using the distilbert model for embedding
 
 # %%
 # using the distilbert model for embedding
@@ -253,11 +268,19 @@ sentences[position[0][0]]
 sentences[position[0][1]]
 
 # %%
-print("Similarity:", util.dot_score(xq[0], embeddings)[0][5323])
+print("Similarity:", util.dot_score(xq, embeddings)[0][5168])
+# We use cosine-similarity and torch.topk to find the highest 5 scores
+cos_scores = util.pytorch_cos_sim(xq, embeddings)[0]
+top_results = torch.topk(cos_scores, k=k)
 
 # %%
-print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][6622])
+top_results
+
+# %%
+print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][1308])
 
 # %% [markdown]
 #
 #
+
+# %%
