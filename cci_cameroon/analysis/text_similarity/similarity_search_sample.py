@@ -25,25 +25,26 @@ from sentence_transformers import SentenceTransformer, util
 import requests
 from io import StringIO
 import time
+import logging
+import re
+
+# %matplotlib inline
+import torch
+import regex
+import omegaconf
+import numpy as np
 
 # %%
 # install sentence tranformers library using command below
 # conda install -c conda-forge sentence-transformers
+# pip install hydra-core omegaconf
 import cci_cameroon
 
 base_dir = cci_cameroon.PROJECT_DIR
 
 
-# %%
-base_dir
-
-# %%
-# from cci_nepal.getters.data_scoping import get_sample_data as gsd
-# from cci_nepal.pipeline.data_scoping import mis_sample_pipeline as msp
-import logging
-import re
-
-# # %matplotlib inline
+# %% [markdown]
+# # Function that fetches data from remote URLs
 
 # %%
 def fetch_data(url_list):
@@ -98,9 +99,16 @@ sentences = fetch_data(urls)
 # %%
 sentences[:10]
 
+# %% [markdown]
+# ## Removing word duplicates and NAN from the collected data
+
 # %%
 # preprocessing the sentences fetched by removing duplicates and NaN
 sentences = [word for word in list(set(sentences)) if type(word) is str]
+
+# %% [markdown]
+# ## initialize sentence transformer model - using BERT. Sentence embedding takes time
+# The bert-base-nli-mean-tokens pre-trained model initialized here and used to create sentence embeddings.
 
 # %%
 # initialize sentence transformer model - using BERT. Sentence embedding takes time
@@ -113,6 +121,12 @@ sentence_embeddings.shape
 
 # %%
 dimension = sentence_embeddings.shape[1]
+
+# %% [markdown]
+# ## Faiss flat index
+# We create a faiss flat index to search the vector embeddings for a match with a new string.
+# The Euclidean distance is used to measure similarity between strings. The shorter the distance,
+# the greater the similarity.
 
 # %%
 # initialize the index with the dimension of the dataset
@@ -133,18 +147,28 @@ index.ntotal
 sentences[:15]
 
 
+# %% [markdown]
+# ## readInput
+# a function to read in sample string used in the match search.
+
 # %%
+# This function allows a user to input a search string for testing
 def readInput():
     txt = input("Enter text and hit enter : ")  # read user's input
     return str(txt)
 
 
 # %%
+# read sample input
 user_input = readInput()
 
 # %%
 k = 5  # we wish to return the index of the two closest strings to our query
 xq = model.encode([user_input])
+
+# %% [markdown]
+# ## Performing match search using faiss index
+# This function searches the top k matching vectors in the corpus and returns the distances between the vectors and the position of the strings in the original sentence collection/matrix
 
 # %%
 # we now perform a search for similarity
@@ -206,7 +230,8 @@ for i in position2[0]:
 print(distance2[0])
 
 # %% [markdown]
-# # By compressing the vectors, we further improve the computation time
+# ## By compressing the vectors, we further improve the computation time
+# Compression is implemented in the following cell by specifying the number of centroids and bits in each centroid
 
 # %%
 m = 8  # number of centroid IDs in final compressed vectors
@@ -240,20 +265,14 @@ sentences[position[0][1]]
 print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][position[0][1]])
 
 # %% [markdown]
-# ## For the given dataset, we notice that the algorithm returns the same set of indexes. However, when compression of the vectors happens, the indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
+# ## Output summary
+# For the given dataset, we notice that the algorithm returns the same set of indexes. However, when compression of the vectors happens, the indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
 
 # %%
 # pip install hydra-core omegaconf
 
-# %%
-import pickle
-import torch
-import regex
-import omegaconf
-import numpy as np
-
 # %% [markdown]
-# ## using the distilbert model for embedding
+# # Using the distilbert model for embedding
 
 # %%
 # using the distilbert model for embedding
@@ -359,5 +378,175 @@ print(torch.__version__)
 #
 
 # %%
+# #!pip install bitarray
+# #!pip install hydra-core omegaconf
+# #!pip install fairseq
+# !pip install --no-cache-dir sentencepiece
+
+# %%
+import torch
+
+# workaround to 403 Http limit exceeded, include the following line of code before using torch.hub
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
+xlmr = torch.hub.load("pytorch/fairseq:main", "xlmr.large")
+xlmr.eval()  # disable dropout (or leave in train mode to finetune)
+
+# %%
+print(xlmr)
+
+# %%
+print(embeddings11)
+
+# %% [markdown]
+# # Using a pre-trained model for French text : french_semantic
+# This model is trained using text in french language. We evaluate its performance on french text below.
+# The difference in the models lies mostly at the level of embedding the text.
+
+# %%
+# using the french_semantic model for embedding
+model_fr = SentenceTransformer("Sahajtomar/french_semantic")
+
+# %%
+sentences1 = [
+    "J'aime mon téléphone",
+    "Mon téléphone n'est pas bon.",
+    "Votre téléphone portable est superbe.",
+]
+sentences2 = [
+    "Est-ce qu'il neige demain?",
+    "Récemment, de nombreux ouragans ont frappé les États-Unis",
+    "Le réchauffement climatique est réel",
+]
+embeddings11 = model_fr.encode(sentences1, convert_to_tensor=True)
+embeddings22 = model_fr.encode(sentences2, convert_to_tensor=True)
+cosine_scores = util.pytorch_cos_sim(embeddings11, embeddings22)
+for i in range(len(sentences1)):
+    for j in range(len(sentences2)):
+        print(cosine_scores[i][j])
+"""
+"""
+
+# %%
+print(cosine_scores)
+
+# %%
+sample1 = ["J'aime le téléphone que j'ai!"]
+sample1_emb = model_fr.encode(sample1, convert_to_tensor=True)
+cosine_scores1 = util.pytorch_cos_sim(sample1_emb, embeddings11)
+
+# %%
+print(cosine_scores1)
+
+# %%
+# Trying to use faiss index for the search
+emb11 = model_fr.encode(sentences1)
+emb11.shape
+
+# %%
+fr_index1 = faiss.IndexFlatL2(emb11.shape[1])
+
+# %%
+print(emb11)
+
+# %%
+fr_index1.add(emb11)
+
+# %%
+sam_emb = model_fr.encode(["J'aime le téléphone que j'ai!"])
+
+# %%
+# using Faiss index to compute vector distances
+d, p = fr_index1.search(sam_emb, 2)
+
+# %%
+print(
+    d, p
+)  # the first sentence has a great match and the eucledian distance is smaller - 27.04
+
+# %%
+# another test case
+samp2 = ["Avoir un téléphone peux attirer les soucis!"]
+samp2_emb = model_fr.encode(samp2, convert_to_tensor=True)
+
+# %%
+cosine_scoresb = util.pytorch_cos_sim(samp2_emb, embeddings11)
+print(cosine_scoresb)
+
+# %%
+# Using the FAISS flat index to compute the distance.
+samp2_emb = model_fr.encode(samp2)
+d, p = fr_index1.search(samp2_emb, 2)
+print(d, p)
+
+# %%
+
+# %% [markdown]
+# # The LaBSE pre-trained model
+# It is a multilingual model pre-trained in 109 language. We use it for similarity match search of french text
+
+# %%
+from transformers import BertModel, BertTokenizerFast
+
+# %%
+tokenizer = BertTokenizerFast.from_pretrained("setu4993/LaBSE")
+model = BertModel.from_pretrained("setu4993/LaBSE")
+model = model.eval()
+
+# %%
+fr_sentences = [
+    "la chaleur tue le coronavirus",
+    "le virus se trans,et d'un contact à un autre part les mains",
+    " le soleil tue le virus",
+    "LE Nord ne peut pas avoir le virus. il fait trop chaud",
+    "Le virus se transmet à travers les gouttelettes qui sortent du nez et de la bouche",
+    "Aucun groupe dans notre communauté n'est responsable de la propagation du virus",
+]
+fr_search = ["Le virus ne résiste pas à la chaleur"]
+fr_inputs = tokenizer(fr_sentences, return_tensors="pt", padding=True)
+fr_search_input = tokenizer(fr_search, return_tensors="pt", padding=True)
+with torch.no_grad():
+    fr_outputs = model(**fr_inputs)
+    fr_search_output = model(**fr_search_input)
+# extract the embeddings
+fr_embeddings_out = fr_outputs.pooler_output
+fr_embedding_search = fr_search_output.pooler_output
+
+# %%
+# To calculate similarity between them, we compute the L2 norms of the embeddings
+import torch.nn.functional as F
+
+
+def similarity(embeddings_1, embeddings_2):
+    normalized_embeddings_1 = F.normalize(embeddings_1, p=2)
+    normalized_embeddings_2 = F.normalize(embeddings_2, p=2)
+    return torch.matmul(
+        normalized_embeddings_1, normalized_embeddings_2.transpose(0, 1)
+    )
+
+
+# %%
+print(similarity(fr_embedding_search, fr_embeddings_out))
+
+# %%
+cosine_scoresb2 = util.pytorch_cos_sim(fr_embedding_search, fr_embeddings_out)
+print(cosine_scoresb2)
+
+# %% [markdown]
+#
+
+# %%
+# compute cosine similarity using the sentences used for french_semantic model
+# names of variables are : sentences1 , sample1
+sentences1_inputs = tokenizer(sentences1, return_tensors="pt", padding=True)
+sample1_input = tokenizer(sample1, return_tensors="pt", padding=True)
+with torch.no_grad():
+    sentences1_outputs = model(**sentences1_inputs)
+    sample1_output = model(**sample1_input)
+# extract the embeddings
+sentences1_embeddings_out = sentences1_outputs.pooler_output
+sample1_embedding_search = sample1_output.pooler_output
+
+# %%
+print(similarity(sample1_embedding_search, sentences1_embeddings_out))
 
 # %%
