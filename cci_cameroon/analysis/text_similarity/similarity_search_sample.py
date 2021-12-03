@@ -338,27 +338,27 @@ for i in position5[0]:
 print(distance5[0])
 
 # %%
-print("Similarity:", util.dot_score(xq, embeddings)[0][5168])
+# print("Similarity:", util.dot_score(xq, embeddings)[0][5168])
 # We use cosine-similarity and torch.topk to find the highest 5 scores
-cos_scores = util.pytorch_cos_sim(xq, embeddings)[0]
-top_results = torch.topk(cos_scores, k=k)
-
-# %%
-top_results
-
-# %%
-print("Similarity:", util.dot_score(xq[0], sentence_embeddings)[0][1308])
+# cos_scores = util.pytorch_cos_sim(xq, embeddings)[0]
+# top_results = torch.topk(cos_scores, k=k)
 
 # %% [markdown]
-# # Using CamemBERT model
+# # Using French models
+# We create a sample corpus of French sentences that would be used across the different pre-trained models below.
 
 # %%
-import torch
-
-# workaround to 403 Http limit exceeded, include the following line of code before using torch.hub
-torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
-camembert = torch.hub.load("pytorch/fairseq", "camembert")
-camembert.eval()  # disable dropout (or leave in train mode to finetune)
+sentences_french = [
+    "C'est une personne heureuse",
+    "J'aime mon téléphone",
+    "Mon téléphone n'est pas bon.",
+    "Elle est heureuse apres avoir eu le BAC",
+    "Votre téléphone portable est superbe.",
+    "Récemment, de nombreux ouragans ont frappé les États-Unis",
+    "Aujourd'hui est une journée ensoleillée",
+]
+sample_french1 = ["J'aime le téléphone que j'ai!"]
+sample_french2 = ["C'est une personne très heureuse"]
 
 # %%
 print(torch.__version__)
@@ -396,6 +396,25 @@ print(xlmr)
 
 # %%
 print(embeddings11)
+
+# %% [markdown]
+# # FlauBert pre-trained model
+
+# %%
+model_flaubert = SentenceTransformer("hugorosen/flaubert_base_uncased-xnli-sts")
+
+
+# %%
+# create embeddings of our sample frence sentences
+embeddings_flaubert = model_flaubert.encode(sentences_french)
+embedding_sample1_fr = model_flaubert.encode(sample_french1)
+embedding_sample2_fr = model_flaubert.encode(sample_french2)
+
+# %%
+scores_flaubert1 = util.pytorch_cos_sim(embedding_sample1_fr, embeddings_flaubert)
+scores_flaubert2 = util.pytorch_cos_sim(embedding_sample2_fr, embeddings_flaubert)
+print(scores_flaubert1)
+print(scores_flaubert2)
 
 # %% [markdown]
 # # Using a pre-trained model for French text : french_semantic
@@ -436,6 +455,23 @@ cosine_scores1 = util.pytorch_cos_sim(sample1_emb, embeddings11)
 
 # %%
 print(cosine_scores1)
+
+# %% [markdown]
+# ### Using the french_semantic model on the general sample data created above to compare its performance with other models
+
+# %%
+embeddings_fr_semantic = model_fr.encode(sentences_french, convert_to_tensor=True)
+embeddings_sample1_fr_semantich = model_fr.encode(
+    sample_french1, convert_to_tensor=True
+)
+embeddings_sample2_fr_semantic = model_fr.encode(sample_french2, convert_to_tensor=True)
+
+# %%
+print(util.pytorch_cos_sim(embeddings_sample1_fr_semantich, embeddings_fr_semantic))
+print(util.pytorch_cos_sim(embeddings_sample2_fr_semantic, embeddings_fr_semantic))
+
+
+# %%
 
 # %%
 # Trying to use faiss index for the search
@@ -531,8 +567,19 @@ print(similarity(fr_embedding_search, fr_embeddings_out))
 cosine_scoresb2 = util.pytorch_cos_sim(fr_embedding_search, fr_embeddings_out)
 print(cosine_scoresb2)
 
-# %% [markdown]
-#
+# %%
+# compute cosine similarity using the sentences used for french_semantic model
+# names of variables are : sentences1 , sample1
+sentences1_fr_inputs = tokenizer(sentences_french, return_tensors="pt", padding=True)
+sample1_fr_input = tokenizer(sample_french1, return_tensors="pt", padding=True)
+sample2_fr_input = tokenizer(sample_french2, return_tensors="pt", padding=True)
+with torch.no_grad():
+    sentences1_fr_outputs = model(**sentences1_fr_inputs)
+    sample1_fr_output = model(**sample1_fr_input)
+    sample2_fr_output = model(**sample2_fr_input)
+# extract the embeddings
+sentences1_embeddings_out = sentences1_outputs.pooler_output
+sample1_embedding_search = sample1_output.pooler_output
 
 # %%
 # compute cosine similarity using the sentences used for french_semantic model
@@ -549,4 +596,13 @@ sample1_embedding_search = sample1_output.pooler_output
 # %%
 print(similarity(sample1_embedding_search, sentences1_embeddings_out))
 
+# %% [markdown]
+# ## Using CamemBERT model
+
 # %%
+import torch
+
+# workaround to 403 Http limit exceeded, include the following line of code before using torch.hub
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
+camembert = torch.hub.load("pytorch/fairseq", "camembert")
+camembert.eval()  # disable dropout (or leave in train mode to finetune)
