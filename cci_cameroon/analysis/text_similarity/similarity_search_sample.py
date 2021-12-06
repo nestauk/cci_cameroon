@@ -33,41 +33,24 @@ import torch
 import regex
 import omegaconf
 import numpy as np
+import cci_cameroon
+from cci_cameroon.getters.external_data import fetch_data, similarity
+
+# %% [markdown]
+# # Semantic Textual Similarity matching
+# This notebook contains an implementation of sample transformer models for both English and French text. Text Embeddings are generated using different pre-trained models and their performance on matching sample strings is evaluated. The cosine similarity score or the Euclidean distance between the created vectors is used for the evaluation.
 
 # %%
 # install sentence tranformers library using command below
 # conda install -c conda-forge sentence-transformers
 # pip install hydra-core omegaconf
-import cci_cameroon
-
+# #!pip install bitarray
+# #!pip install --no-cache-dir sentencepiece
 base_dir = cci_cameroon.PROJECT_DIR
 
 
-# %% [markdown]
-# # Function that fetches data from remote URLs
-
 # %%
-def fetch_data(url_list):
-    """function fetches data to use from a remote source(s).
-    @param: list of urls
-    return: list of sentences. A version that returns a dataframe that holds the rumours and the labels would
-    developed for use."""
-    # we loop through each url and create our sentences data
-    sentences = []
-    for url in urls:
-        res = requests.get(url)
-        # extract to dataframe
-        data = pd.read_csv(
-            StringIO(res.text), sep="\t", header=None, error_bad_lines=False
-        )
-        # add to columns 1 and 2 to sentences list
-        sentences.extend(data[1].tolist())
-        sentences.extend(data[2].tolist())
-    return sentences
-
-
-# %%
-# read in sample text dataset from online
+# read in sample text dataset from online.
 urls = [
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/MSRpar.train.tsv",
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/MSRpar.test.tsv",
@@ -78,23 +61,6 @@ urls = [
     "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2015/images.test.tsv",
 ]
 sentences = fetch_data(urls)
-
-# %% [markdown]
-# # Similarity search - things to consider when choosing an approach
-#
-# 1. Symmetric -> the query is identical to the text stored in length and form. Candidate transformer distilBERT
-# 2. Assymmetric -> the query differs from the text stored. Text stored is usually larger than the query. This is the category into which our task falls I guess.
-#
-# Questions for team:
-#
-# 1. do we consider this problem a symmetric or assymmetric one? I guess assymmetric because we do not have control over the size of rumours created?
-#
-# 2. With concerns on having rumours in the database in both English and French, do we train separate models to handle this?
-#
-# 3. Should we be more concerned with great match of the query or with computation time? This will influence our choice of [FAISS](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes) index to use
-#
-#
-# N.B The FAISS library does not compute similarity score. It only returns the vector distance. However, one can normalze the vectors and compute their dot product using the appropraite index since the similarity
 
 # %%
 sentences[:10]
@@ -268,9 +234,6 @@ print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][position[0][1]])
 # ## Output summary
 # For the given dataset, we notice that the algorithm returns the same set of indexes. However, when compression of the vectors happens, the indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
 
-# %%
-# pip install hydra-core omegaconf
-
 # %% [markdown]
 # # Using the distilbert model for embedding
 
@@ -337,12 +300,6 @@ for i in position5[0]:
     print(sentences[i])
 print(distance5[0])
 
-# %%
-# print("Similarity:", util.dot_score(xq, embeddings)[0][5168])
-# We use cosine-similarity and torch.topk to find the highest 5 scores
-# cos_scores = util.pytorch_cos_sim(xq, embeddings)[0]
-# top_results = torch.topk(cos_scores, k=k)
-
 # %% [markdown]
 # # Using French models
 # We create a sample corpus of French sentences that would be used across the different pre-trained models below.
@@ -378,31 +335,14 @@ print(torch.__version__)
 #
 
 # %%
-# #!pip install bitarray
-# #!pip install hydra-core omegaconf
-# #!pip install fairseq
-# !pip install --no-cache-dir sentencepiece
-
-# %%
-import torch
-
 # workaround to 403 Http limit exceeded, include the following line of code before using torch.hub
-torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
-xlmr = torch.hub.load("pytorch/fairseq:main", "xlmr.large")
-xlmr.eval()  # disable dropout (or leave in train mode to finetune)
-
-# %%
-print(xlmr)
-
-# %%
-print(embeddings11)
+# torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
 
 # %% [markdown]
 # # FlauBert pre-trained model
 
 # %%
 model_flaubert = SentenceTransformer("hugorosen/flaubert_base_uncased-xnli-sts")
-
 
 # %%
 # create embeddings of our sample frence sentences
@@ -548,19 +488,6 @@ fr_embeddings_out = fr_outputs.pooler_output
 fr_embedding_search = fr_search_output.pooler_output
 
 # %%
-# To calculate similarity between them, we compute the L2 norms of the embeddings
-import torch.nn.functional as F
-
-
-def similarity(embeddings_1, embeddings_2):
-    normalized_embeddings_1 = F.normalize(embeddings_1, p=2)
-    normalized_embeddings_2 = F.normalize(embeddings_2, p=2)
-    return torch.matmul(
-        normalized_embeddings_1, normalized_embeddings_2.transpose(0, 1)
-    )
-
-
-# %%
 print(similarity(fr_embedding_search, fr_embeddings_out))
 
 # %%
@@ -578,8 +505,13 @@ with torch.no_grad():
     sample1_fr_output = model(**sample1_fr_input)
     sample2_fr_output = model(**sample2_fr_input)
 # extract the embeddings
-sentences1_embeddings_out = sentences1_outputs.pooler_output
-sample1_embedding_search = sample1_output.pooler_output
+sentences1_fr_embeddings_out = sentences1_fr_outputs.pooler_output
+sample1_fr_embedding_search = sample1_fr_output.pooler_output
+sample2_fr_embedding_search = sample2_fr_output.pooler_output
+
+# %%
+print(similarity(sample1_fr_embedding_search, sentences1_fr_embeddings_out))
+print(similarity(sample2_fr_embedding_search, sentences1_fr_embeddings_out))
 
 # %%
 # compute cosine similarity using the sentences used for french_semantic model
@@ -596,13 +528,4 @@ sample1_embedding_search = sample1_output.pooler_output
 # %%
 print(similarity(sample1_embedding_search, sentences1_embeddings_out))
 
-# %% [markdown]
-# ## Using CamemBERT model
-
 # %%
-import torch
-
-# workaround to 403 Http limit exceeded, include the following line of code before using torch.hub
-torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
-camembert = torch.hub.load("pytorch/fairseq", "camembert")
-camembert.eval()  # disable dropout (or leave in train mode to finetune)
