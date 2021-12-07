@@ -34,7 +34,11 @@ import regex
 import omegaconf
 import numpy as np
 import cci_cameroon
-from cci_cameroon.getters.external_data import fetch_data, similarity
+from cci_cameroon.getters.external_data import (
+    fetch_data,
+    similarity,
+    compute_embedding_cosign_score,
+)
 
 # %% [markdown]
 # # Semantic Textual Similarity matching
@@ -50,16 +54,12 @@ base_dir = cci_cameroon.PROJECT_DIR
 
 
 # %%
+urls
+
+# %%
 # read in sample text dataset from online.
-urls = [
-    "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/MSRpar.train.tsv",
-    "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/MSRpar.test.tsv",
-    "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2012/OnWN.test.tsv",
-    "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2013/OnWN.test.tsv",
-    "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2014/OnWN.test.tsv",
-    "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2014/images.test.tsv",
-    "https://raw.githubusercontent.com/brmson/dataset-sts/master/data/sts/semeval-sts/2015/images.test.tsv",
-]
+with open(f"{base_dir}/inputs/data/english_url.txt") as f:
+    urls1 = [u.strip("\n") for u in f]
 sentences = fetch_data(urls)
 
 # %%
@@ -345,14 +345,12 @@ print(torch.__version__)
 model_flaubert = SentenceTransformer("hugorosen/flaubert_base_uncased-xnli-sts")
 
 # %%
-# create embeddings of our sample frence sentences
-embeddings_flaubert = model_flaubert.encode(sentences_french)
-embedding_sample1_fr = model_flaubert.encode(sample_french1)
-embedding_sample2_fr = model_flaubert.encode(sample_french2)
-
-# %%
-scores_flaubert1 = util.pytorch_cos_sim(embedding_sample1_fr, embeddings_flaubert)
-scores_flaubert2 = util.pytorch_cos_sim(embedding_sample2_fr, embeddings_flaubert)
+scores_flaubert1 = compute_embedding_cosign_score(
+    model_flaubert, sample_french1, sentences_french
+)
+scores_flaubert2 = compute_embedding_cosign_score(
+    model_flaubert, sample_french2, sentences_french
+)
 print(scores_flaubert1)
 print(scores_flaubert2)
 
@@ -376,22 +374,22 @@ sentences2 = [
     "Récemment, de nombreux ouragans ont frappé les États-Unis",
     "Le réchauffement climatique est réel",
 ]
-embeddings11 = model_fr.encode(sentences1, convert_to_tensor=True)
-embeddings22 = model_fr.encode(sentences2, convert_to_tensor=True)
-cosine_scores = util.pytorch_cos_sim(embeddings11, embeddings22)
+cosine_scores = compute_embedding_cosign_score(
+    model_fr, sentences1, sentences2, tensor=True
+)
+# printing the cosign values
 for i in range(len(sentences1)):
     for j in range(len(sentences2)):
         print(cosine_scores[i][j])
-"""
-"""
 
 # %%
 print(cosine_scores)
 
 # %%
 sample1 = ["J'aime le téléphone que j'ai!"]
-sample1_emb = model_fr.encode(sample1, convert_to_tensor=True)
-cosine_scores1 = util.pytorch_cos_sim(sample1_emb, embeddings11)
+cosine_scores1 = compute_embedding_cosign_score(
+    model_fr, sample1, sentences1, tensor=True
+)
 
 # %%
 print(cosine_scores1)
@@ -406,15 +404,24 @@ embeddings_sample1_fr_semantich = model_fr.encode(
 )
 embeddings_sample2_fr_semantic = model_fr.encode(sample_french2, convert_to_tensor=True)
 
-# %%
-print(util.pytorch_cos_sim(embeddings_sample1_fr_semantich, embeddings_fr_semantic))
-print(util.pytorch_cos_sim(embeddings_sample2_fr_semantic, embeddings_fr_semantic))
-
 
 # %%
+print(
+    compute_embedding_cosign_score(
+        model_fr, sample_french1, sentences_french, tensor=True
+    )
+)
+print(
+    compute_embedding_cosign_score(
+        model_fr, sample_french2, sentences_french, tensor=True
+    )
+)
+
+# %% [markdown]
+# ## Using Faiss index to compute the distances for french text
 
 # %%
-# Trying to use faiss index for the search
+# use a sample faiss index for the search
 emb11 = model_fr.encode(sentences1)
 emb11.shape
 
@@ -454,13 +461,12 @@ samp2_emb = model_fr.encode(samp2)
 d, p = fr_index1.search(samp2_emb, 2)
 print(d, p)
 
-# %%
-
 # %% [markdown]
 # # The LaBSE pre-trained model
 # It is a multilingual model pre-trained in 109 language. We use it for similarity match search of french text
 
 # %%
+# using Hugging face
 from transformers import BertModel, BertTokenizerFast
 
 # %%
