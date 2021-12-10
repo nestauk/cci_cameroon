@@ -1,7 +1,7 @@
 # %%
 import torch.nn.functional as F
 from sentence_transformers import util
-
+from io import StringIO 
 
 # %%
 def fetch_data(url_list):
