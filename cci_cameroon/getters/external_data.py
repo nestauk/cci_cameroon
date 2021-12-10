@@ -6,7 +6,6 @@ import torch
 import requests
 import pandas as pd
 
-
 # %%
 def fetch_data(url_list):
     """function fetches data to use from a remote source(s).

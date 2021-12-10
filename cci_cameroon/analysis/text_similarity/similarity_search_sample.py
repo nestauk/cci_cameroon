@@ -40,6 +40,9 @@ from cci_cameroon.getters.external_data import (
     compute_embedding_cosign_score,
 )
 
+# %%
+# !pip list
+
 # %% [markdown]
 # # Semantic Textual Similarity matching
 # This notebook contains an implementation of sample transformer models for both English and French text. Text Embeddings are generated using different pre-trained models and their performance on matching sample strings is evaluated. The cosine similarity score or the Euclidean distance between the created vectors is used for the evaluation.
@@ -318,6 +321,9 @@ sample_french1 = ["J'aime le téléphone que j'ai!"]
 sample_french2 = ["C'est une personne très heureuse"]
 
 # %%
+import pickle
+
+# %%
 print(torch.__version__)
 
 # %% [markdown]
@@ -345,6 +351,15 @@ print(torch.__version__)
 model_flaubert = SentenceTransformer("hugorosen/flaubert_base_uncased-xnli-sts")
 
 # %%
+flaubert_file = "flaubert_model.pkl"
+pickle.dump(model_flaubert, open(flaubert_file, "wb"))
+
+# some time later...
+
+# load the model from disk
+# loaded_model = pickle.load(open(flaubert_file 'rb'))
+
+# %%
 scores_flaubert1 = compute_embedding_cosign_score(
     model_flaubert, sample_french1, sentences_french
 )
@@ -362,6 +377,15 @@ print(scores_flaubert2)
 # %%
 # using the french_semantic model for embedding
 model_fr = SentenceTransformer("Sahajtomar/french_semantic")
+
+# %%
+fr_file = "fr_semantic_model.pkl"
+pickle.dump(model_fr, open(fr_file, "wb"))
+
+# some time later...
+
+# load the model from disk
+# loaded_model = pickle.load(open(ffr_file 'rb'))
 
 # %%
 sentences1 = [
@@ -473,6 +497,15 @@ from transformers import BertModel, BertTokenizerFast
 tokenizer = BertTokenizerFast.from_pretrained("setu4993/LaBSE")
 model = BertModel.from_pretrained("setu4993/LaBSE")
 model = model.eval()
+
+# %%
+labse_file = "labse_model.pkl"
+pickle.dump(model, open(labse_file, "wb"))
+
+# some time later...
+
+# load the model from disk
+# labse_model = pickle.load(open(labse_file, 'rb'))
 
 # %%
 fr_sentences = [
