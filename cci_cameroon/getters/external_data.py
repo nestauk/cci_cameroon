@@ -2,6 +2,7 @@
 import torch.nn.functional as F
 from sentence_transformers import util
 from io import StringIO 
+import torch
 
 # %%
 def fetch_data(url_list):
