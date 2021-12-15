@@ -301,6 +301,14 @@ plt.hist(ifrc_data["frequency"], density=True, bins=60)
 # ### Action taken
 
 # %%
+ifrc_data["action_taken"].value_counts().head(5)
+
+# %%
+ifrc_data[ifrc_data["type of feedback"] == "Rumors_beliefs_observations"][
+    "action_taken"
+].value_counts(normalize=True).mul(100).head(5)
+
+# %%
 fig, ax = plt.subplots(dpi=100)
 
 print("Number of unique values: " + str(ifrc_data["action_taken"].nunique()))
@@ -362,6 +370,20 @@ plt.title("Categories under rumours, beliefs and observations")
 
 # %%
 print("Number of unique values: " + str(ifrc_data["code"].nunique()))
+
+# %%
+ifrc_data[ifrc_data["type of feedback"] == "Rumors_beliefs_observations"][
+    "code"
+].nunique()
+
+# %%
+f1 = (
+    ifrc_data[ifrc_data["type of feedback"] == "Rumors_beliefs_observations"]["code"]
+    .value_counts()
+    .plot(kind="bar", figsize=(12, 6))
+)
+f1.axes.xaxis.set_ticklabels([])
+plt.title("Bar plot - count of values per code")
 
 # %%
 feedback_type_code = (
