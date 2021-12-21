@@ -13,5 +13,5 @@ sentence-transformers
 sentencepiece
 omegaconf
 tensorflow
-pytorch
+torch
 faiss-cpu
