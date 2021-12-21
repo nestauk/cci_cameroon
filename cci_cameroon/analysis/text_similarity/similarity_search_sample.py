@@ -57,12 +57,12 @@ base_dir = cci_cameroon.PROJECT_DIR
 
 
 # %%
-urls
+urls = []
 
 # %%
 # read in sample text dataset from online.
 with open(f"{base_dir}/inputs/data/english_url.txt") as f:
-    urls1 = [u.strip("\n") for u in f]
+    urls = [u.strip("\n") for u in f]
 sentences = fetch_data(urls)
 
 # %%
