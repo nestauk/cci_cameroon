@@ -40,8 +40,6 @@ from cci_cameroon.getters.external_data import (
     compute_embedding_cosign_score,
 )
 
-# %%
-# !pip list
 
 # %% [markdown]
 # # Semantic Textual Similarity matching
