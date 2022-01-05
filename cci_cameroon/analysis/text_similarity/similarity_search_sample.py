@@ -21,43 +21,32 @@ import os
 import scipy
 import tensorflow as tf
 import faiss
+from faiss import normalize_L2
 from sentence_transformers import SentenceTransformer, util
 import requests
 from io import StringIO
 import time
 import logging
 import re
+from transformers import BertModel, BertTokenizerFast  # using Hugging face
 
 # %matplotlib inline
 import torch
-import regex
-import omegaconf
 import numpy as np
 import cci_cameroon
 from cci_cameroon.getters.external_data import (
     fetch_data,
     similarity,
-    compute_embedding_cosign_score,
+    compute_embedding_cosine_score,
 )
-
-# %%
-# !pip list
 
 # %% [markdown]
 # # Semantic Textual Similarity matching
 # This notebook contains an implementation of sample transformer models for both English and French text. Text Embeddings are generated using different pre-trained models and their performance on matching sample strings is evaluated. The cosine similarity score or the Euclidean distance between the created vectors is used for the evaluation.
 
 # %%
-# install sentence tranformers library using command below
-# conda install -c conda-forge sentence-transformers
-# pip install hydra-core omegaconf
-# #!pip install bitarray
-# #!pip install --no-cache-dir sentencepiece
 base_dir = cci_cameroon.PROJECT_DIR
 
-
-# %%
-urls = []
 
 # %%
 # read in sample text dataset from online.
@@ -98,6 +87,38 @@ dimension = sentence_embeddings.shape[1]
 # the greater the similarity.
 
 # %%
+indp = faiss.index_factory(dimension, "Flat", faiss.METRIC_INNER_PRODUCT)
+
+# %%
+sembed_n = sentence_embeddings
+faiss.normalize_L2(sembed_n)  # to be used for inner product computation
+
+# %%
+indp.train(sembed_n)
+indp.add(sembed_n)
+
+# %%
+xqp = model.encode(["A sailing boat in the horizon with a small airplane on the dock"])
+
+# %%
+faiss.normalize_L2(xqp)  # for use in dot product computation
+
+# %%
+D, I = indp.search(
+    xqp, 4
+)  # sample inner product computation; D is similar to the cosine similarity in this case!
+
+# %%
+print(D)
+print(I)
+
+# %%
+sentences[9549]
+
+# %%
+sentences[9448]
+
+# %%
 # initialize the index with the dimension of the dataset
 index = faiss.IndexFlatL2(dimension)
 
@@ -122,14 +143,14 @@ sentences[:15]
 
 # %%
 # This function allows a user to input a search string for testing
-def readInput():
+def read_input():
     txt = input("Enter text and hit enter : ")  # read user's input
     return str(txt)
 
 
 # %%
 # read sample input
-user_input = readInput()
+user_input = read_input()
 
 # %%
 k = 5  # we wish to return the index of the two closest strings to our query
@@ -172,10 +193,26 @@ sentences[position[0][0]]
 # %%
 num_cells = 50  # Number of cells the index should be divided into
 quantizer = faiss.IndexFlatL2(dimension)
-index2 = faiss.IndexIVFFlat(quantizer, dimension, num_cells)
+index2 = faiss.IndexIVFFlat(quantizer, dimension, num_cells, faiss.METRIC_INNER_PRODUCT)
 
 # %%
 index2.is_trained
+
+# %%
+index2.train(sembed_n)
+
+# %%
+index2.add(sembed_n)
+
+# %%
+d, i = index2.search(xqp, 5)
+
+# %%
+print(d)
+print(i)
+
+# %%
+sentences[9549]
 
 # %%
 index2.train(sentence_embeddings)
@@ -230,12 +267,9 @@ sentences[position[0][0]]
 # %%
 sentences[position[0][1]]
 
-# %%
-print("Similarity:", util.dot_score(xq, sentence_embeddings)[0][position[0][1]])
-
 # %% [markdown]
 # ## Output summary
-# For the given dataset, we notice that the algorithm returns the same set of indexes. However, when compression of the vectors happens, the indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
+# For the given dataset, we notice that the algorithm returns the same set of indexes. However, when compression of the vectors happens, the first returned index is not the nearest baseline truth. The indexes are returned in a reversed order. This shows that accuracy is compromised. The least distance between the vectors increases from 90 to 130.
 
 # %% [markdown]
 # # Using the distilbert model for embedding
@@ -262,9 +296,6 @@ embeddings2 = np.array([embedding for embedding in embeddings]).astype("float32"
 
 # %%
 print(embeddings[:10])
-
-# %%
-print(embeddings2[:10])
 
 # %%
 # create a faiss index for the search using the embenddings
@@ -320,12 +351,6 @@ sentences_french = [
 sample_french1 = ["J'aime le téléphone que j'ai!"]
 sample_french2 = ["C'est une personne très heureuse"]
 
-# %%
-import pickle
-
-# %%
-print(torch.__version__)
-
 # %% [markdown]
 # ## 1. https://www.pinecone.io/learn/faiss-tutorial/
 # 2. Choosing index https://towardsdatascience.com/billion-scale-semantic-similarity-search-with-faiss-sbert-c845614962e2
@@ -351,19 +376,10 @@ print(torch.__version__)
 model_flaubert = SentenceTransformer("hugorosen/flaubert_base_uncased-xnli-sts")
 
 # %%
-flaubert_file = "flaubert_model.pkl"
-pickle.dump(model_flaubert, open(flaubert_file, "wb"))
-
-# some time later...
-
-# load the model from disk
-# loaded_model = pickle.load(open(flaubert_file 'rb'))
-
-# %%
-scores_flaubert1 = compute_embedding_cosign_score(
+scores_flaubert1 = compute_embedding_cosine_score(
     model_flaubert, sample_french1, sentences_french
 )
-scores_flaubert2 = compute_embedding_cosign_score(
+scores_flaubert2 = compute_embedding_cosine_score(
     model_flaubert, sample_french2, sentences_french
 )
 print(scores_flaubert1)
@@ -379,15 +395,6 @@ print(scores_flaubert2)
 model_fr = SentenceTransformer("Sahajtomar/french_semantic")
 
 # %%
-fr_file = "fr_semantic_model.pkl"
-pickle.dump(model_fr, open(fr_file, "wb"))
-
-# some time later...
-
-# load the model from disk
-# loaded_model = pickle.load(open(ffr_file 'rb'))
-
-# %%
 sentences1 = [
     "J'aime mon téléphone",
     "Mon téléphone n'est pas bon.",
@@ -398,10 +405,10 @@ sentences2 = [
     "Récemment, de nombreux ouragans ont frappé les États-Unis",
     "Le réchauffement climatique est réel",
 ]
-cosine_scores = compute_embedding_cosign_score(
+cosine_scores = compute_embedding_cosine_score(
     model_fr, sentences1, sentences2, tensor=True
 )
-# printing the cosign values
+# printing the cosine values
 for i in range(len(sentences1)):
     for j in range(len(sentences2)):
         print(cosine_scores[i][j])
@@ -411,7 +418,7 @@ print(cosine_scores)
 
 # %%
 sample1 = ["J'aime le téléphone que j'ai!"]
-cosine_scores1 = compute_embedding_cosign_score(
+cosine_scores1 = compute_embedding_cosine_score(
     model_fr, sample1, sentences1, tensor=True
 )
 
@@ -431,12 +438,12 @@ embeddings_sample2_fr_semantic = model_fr.encode(sample_french2, convert_to_tens
 
 # %%
 print(
-    compute_embedding_cosign_score(
+    compute_embedding_cosine_score(
         model_fr, sample_french1, sentences_french, tensor=True
     )
 )
 print(
-    compute_embedding_cosign_score(
+    compute_embedding_cosine_score(
         model_fr, sample_french2, sentences_french, tensor=True
     )
 )
@@ -490,22 +497,11 @@ print(d, p)
 # It is a multilingual model pre-trained in 109 language. We use it for similarity match search of french text
 
 # %%
-# using Hugging face
-from transformers import BertModel, BertTokenizerFast
 
 # %%
 tokenizer = BertTokenizerFast.from_pretrained("setu4993/LaBSE")
 model = BertModel.from_pretrained("setu4993/LaBSE")
 model = model.eval()
-
-# %%
-labse_file = "labse_model.pkl"
-pickle.dump(model, open(labse_file, "wb"))
-
-# some time later...
-
-# load the model from disk
-# labse_model = pickle.load(open(labse_file, 'rb'))
 
 # %%
 fr_sentences = [
@@ -566,5 +562,15 @@ sample1_embedding_search = sample1_output.pooler_output
 
 # %%
 print(similarity(sample1_embedding_search, sentences1_embeddings_out))
+
+# %% [markdown]
+# # Summary
+#
+# With focus shifted to the French models (given that the text for the project is in french), the three models FLauBert, LaBSE and French_semantic used were evaluated using the cosine similarity score.
+#
+# * The french_semantic transformer model performs well in matching similar strings and gives better results for dissimilar strings
+# * Although LaBSE records good scores in matching related strings, the score for unrelated strings is not as good. We expect low similarity scores in some cases but that is not the case.
+#
+# The french_semantic model could be explored more as a potentially useful model.
 
 # %%

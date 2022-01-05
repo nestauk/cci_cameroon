@@ -38,7 +38,7 @@ def similarity(embeddings_1, embeddings_2):
 
 
 # %%
-def compute_embedding_cosign_score(model_name, corpus1, corpus2, tensor=False):
+def compute_embedding_cosine_score(model_name, corpus1, corpus2, tensor=False):
     """performs embedding of text corpora and computes cosine similarity score between text vectors in the embedings.
     parameters
     model_name - the name of the model to be used for the embeddings
