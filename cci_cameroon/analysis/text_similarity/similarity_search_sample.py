@@ -571,6 +571,6 @@ print(similarity(sample1_embedding_search, sentences1_embeddings_out))
 # * The french_semantic transformer model performs well in matching similar strings and gives better results for dissimilar strings
 # * Although LaBSE records good scores in matching related strings, the score for unrelated strings is not as good. We expect low similarity scores in some cases but that is not the case.
 #
-# The french_semantic model could be explored more as a potentially useful model.
+# The french_semantic model stands a better candidate for use with the text compared to the other two.
 
 # %%
