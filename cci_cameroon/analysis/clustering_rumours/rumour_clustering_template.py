@@ -22,17 +22,14 @@ import numpy as np
 import cci_cameroon
 from langdetect import detect, detect_langs
 from googletrans import Translator
-from sklearn.metrics import adjusted_rand_score
 from random import randint
 
 # %matplotlib inline
-import tensorflow as tf
 import faiss
 from faiss import normalize_L2
 from sentence_transformers import SentenceTransformer
 import time
 import logging
-import torch
 from sklearn.neighbors import kneighbors_graph
 import networkx as nx
 import cdlib
@@ -258,16 +255,14 @@ B = kneighbors_graph(
 )
 B.toarray()[0]
 
+
 # %%
 # #!pip install cdlib
 
 # %% [markdown]
-# https://towardsdatascience.com/community-detection-algorithms-9bd8951e7dae
+#
 
 # %%
-coms = algorithms.leiden(G)
-coms2 = algorithms.leiden(G2)
-
 
 # %%
 # generates colors to use for graph
@@ -297,6 +292,9 @@ print(G2)
 nx.draw(G2, with_labels=True)
 
 # %%
+coms2 = algorithms.leiden(G2)
+
+# %%
 draw_communities_graph(G2, generate_colors(coms2), coms2)
 
 # %% [markdown]
@@ -306,13 +304,19 @@ draw_communities_graph(G2, generate_colors(coms2), coms2)
 list(to_use2.comment[coms2.communities[2]])  # belief that the disease exists
 
 # %%
-list(to_use2.comment[coms2.communities[3]])
+list(to_use2.comment[coms2.communities[3]])  # belief on hand washing
 
 # %%
-list(to_use2.comment[coms2.communities[1]])  # belief on hand washing
+list(to_use2.comment[coms2.communities[0]])  # Observations on mask wearing
 
 # %%
-list(to_use2.comment[coms2.communities[0]])
+list(to_use2.comment[coms2.communities[1]])  #
+
+# %%
+G = nx.from_numpy_matrix(A)
+
+# %%
+coms = algorithms.leiden(G)
 
 # %%
 comsw = algorithms.walktrap(G)
@@ -331,11 +335,58 @@ list(to_use2.comment[comsw2.communities[1]])
 list(to_use2.comment[comsw2.communities[2]])
 
 # %%
-to_search = model.encode([to_use2.comment[5]])
-faiss.normalize_L2(to_search)
+nx.draw(G, with_labels=True)
 
 # %%
-indp2.add(sentence_embeddings2)
-dist, post = indp2.search(to_search, 7)
+coms = algorithms.leiden(G)
+
+# %%
+draw_communities_graph(G, generate_colors(coms), coms)
+
+# %%
+for i in range(len(coms.communities)):
+    print(data.comment[coms.communities[i]])
+    print("######NEW Group###")
+
+# %% [markdown]
+# # Using the distance measure
+
+# %%
+ind_dis = faiss.index_factory(
+    sentence_embeddings2.shape[1], "Flat"
+)  # faiss.METRIC_INNER_PRODUCT)
+# setting the number of neighbors to consider for graph connectivity
+neighbors2 = 5
+ind_dis.train(sentence_embeddings2)
+ind_dis.add(sentence_embeddings2)
+dis_matric, dis_pos = ind_dis.search(
+    sentence_embeddings2, sentence_embeddings2.shape[0]
+)
+
+# %%
+dis_matric
+
+# %%
+C = kneighbors_graph(dis_matric, neighbors2, mode="connectivity", include_self=False)
+C.toarray()[0]
+
+# %%
+Gc = nx.from_numpy_matrix(C)
+comsc = algorithms.leiden(Gc)
+
+# %%
+draw_communities_graph(Gc, generate_colors(comsc), comsc)
+
+# %%
+to_use2.comment[comsc.communities[0]]
+
+# %%
+to_use2.comment[comsc.communities[1]]
+
+# %%
+to_use2.comment[comsc.communities[2]]
+
+# %% [markdown]
+# https://towardsdatascience.com/community-detection-algorithms-9bd8951e7dae
 
 # %%
