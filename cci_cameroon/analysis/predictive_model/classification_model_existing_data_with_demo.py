@@ -28,6 +28,7 @@
 # 5. Takes the best performing model and creates demo version
 
 # %%
+# Import modules
 import pandas as pd
 import cci_cameroon
 from googletrans import Translator
@@ -61,22 +62,14 @@ project_directory = cci_cameroon.PROJECT_DIR
 # File links
 w1_file = "multi_label_output_w1.xlsx"
 w2_file = "workshop2_comments_french.xlsx"
-
+# Read workshop files
 w1 = pd.read_excel(f"{project_directory}/outputs/data/" + w1_file)
-
 w2 = pd.read_excel(f"{project_directory}/outputs/data/" + w2_file)
 
 # %%
-w1.shape
-
-# %%
+# Adding language column
 translator = Translator()
 w1["language"] = w1["comment"].apply(lambda x: detect(x))
-
-# %%
-pd.DataFrame(w1.groupby("language").comment.count().sort_values(ascending=False)).head(
-    15
-)
 
 # %%
 en = w1[w1.language == "en"].copy()
@@ -369,7 +362,7 @@ def predict_rumour(thres):
 # ### Live view of the model
 
 # %% [markdown]
-# Using best performing model - KNN with transformer
+# Using best performing model - KNN with transformer. Set the threshold to see probabilities for each class (eg 0.8 will show probabilities >= 80%)
 
 # %%
 predict_rumour(0.8)
@@ -380,8 +373,6 @@ predict_rumour(0.8)
 #     - Improve the model as it is cleaning the dataset (removing incorrect comments in codes)
 #     - Badly affect the model as the number of comments per class greatly reduce
 #         - What do we do in this case?
-# - It doesn't currently handle multi-class cases well: I have tried explicitly talking about two codes and it will classify it as 'no code'
-# - More understanding of cases where it classifies as 'no code'
-# - What about cases where the model predicts better or objectively better than the existing labels?
-# - tuning of model using training set
+# - It doesn't currently handle multi-class cases well
+# - Tuning of model using training set
 # - Looking at what features / words / phrases are strong predictors for a class
