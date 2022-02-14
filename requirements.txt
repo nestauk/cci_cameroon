@@ -9,3 +9,8 @@ tqdm
 filelock
 typer
 sh
+cdlib
+faiss-cpu
+googletrans
+networkx
+sentence-transformers
