@@ -9,3 +9,8 @@ tqdm
 filelock
 typer
 sh
+sentence_transformers
+sklearn
+stop_words
+langdetect
+googletrans
