@@ -39,7 +39,7 @@ from cdlib import algorithms
 # # Approach used
 #
 # * Load and clean the dataset
-# * Convert the unlabelled comments into numerical values using a transformer model
+# * Convert the unlabelled comments into vector of numerical values using a transformer model
 # * Using FAISS library, compute pairwise similarity scores for the comments
 # * Based on the similarity scores, a connectivity graph
 # * Using a community detection algorithm, we generate subgroups/clusters from the graph
@@ -60,7 +60,7 @@ data_df = pd.read_excel(
 )
 
 # %%
-data_df.head()
+data_df.first_code.unique()
 
 # %%
 data_df.comment = [x.lower() for x in data_df.comment]
@@ -103,18 +103,22 @@ data.shape
 data["category_id"] = data.first_code.factorize()[0]
 
 # %%
+# checking the distribution of the codes in the data
 data.groupby("first_code").comment.count().plot(kind="bar")
 
 # %%
+data = data.drop_duplicates(["comment"])
+data.reset_index(inplace=True)
+data.shape
+
+# %%
+# Converting the codes into integers
 data["cluster"] = data.code.factorize()[0]
 
 # %%
-# using the french_semantic model for embedding
+# using the french_semantic model for word embedding
 model = SentenceTransformer("Sahajtomar/french_semantic")
 sentence_embeddings = model.encode(data.comment)
-
-# %%
-sentence_embeddings[0]
 
 # %%
 data[
@@ -122,147 +126,25 @@ data[
 ].shape  # 127 cluster 1(0),137 cluster 2 (1), 136 cluster 3 (2)
 
 # %% [markdown]
-# # sentence transformer approach
-# we use fewer comments in this case
+# ## We start with a smaller sample of the data (~30 records) to ease inspection of results
 
 # %%
 # creating a small subset of the data made up of the different categories
 set1 = data[data.category_id == 0]["comment"][:10]
 set2 = data[data.category_id == 1]["comment"][:10]
 set3 = data[data.category_id == 2]["comment"][:10]
+to_use2 = (
+    pd.concat([set1, set2, set3]).drop_duplicates().reset_index().drop("index", axis=1)
+)
+# to_use2 = to_use.reset_index().drop("index",axis=1)
 
 # %%
-to_use = pd.concat([set1, set2, set3])
-to_use.drop_duplicates(inplace=True)
-
-# %%
-to_use2 = to_use.reset_index().drop("index", axis=1)
-
-
-# %%
+# create word embeddings using the transformer model
 sentence_embeddings2 = model.encode(to_use2.comment)
 
 # %%
 comments_df = data[["id", "comment", "cluster"]].copy()
 
-# %%
-indp = faiss.index_factory(
-    sentence_embeddings.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
-)
-
-# %%
-faiss.normalize_L2(sentence_embeddings)  # to be used for inner product computation
-
-# %%
-neighbors = 10
-
-# %%
-indp.train(sentence_embeddings)
-indp.add(sentence_embeddings)
-
-# %%
-distance_matric, position = indp.search(
-    sentence_embeddings, sentence_embeddings.shape[0]
-)
-
-# %%
-distance_matric
-
-# %%
-# create a KNN network with 10 neighbors maximum
-A = kneighbors_graph(
-    distance_matric, neighbors, mode="connectivity", include_self=False
-)
-A.toarray()[0]
-
-# %%
-# load the graph
-G = nx.from_numpy_matrix(A)
-print(G)
-# visualize the graph
-nx.draw(G, with_labels=False)
-
-# %%
-len(G.nodes), len(G.edges)
-
-
-# %%
-def edge_to_remove(graph):
-    G_dict = nx.edge_betweenness_centrality(graph)
-    edge = ()
-    # extract the edge with highest edge betweenness centrality score
-    for key, value in sorted(G_dict.items(), key=lambda item: item[1], reverse=True):
-        edge = key
-        break
-    return edge
-
-
-# %%
-# partition graph into multiple communities
-def girvan_newman(graph):
-    # find number of connected components
-    sg = nx.connected_components(graph)
-    sg_count = nx.number_connected_components(graph)
-    while sg_count == 1:
-        graph.remove_edge(edge_to_remove(graph)[0], edge_to_remove(graph)[1])
-        sg = nx.connected_components(graph)
-        sg_count = nx.number_connected_components(graph)
-    return sg
-
-
-# %%
-# find communities in the graph
-c = girvan_newman(G.copy())
-# find the nodes forming the communities
-node_groups = []
-for i in c:
-    node_groups.append(list(i))
-
-# %%
-data.comment[node_groups[0]][:50]
-
-# %%
-# plot the communities
-color_map = []
-for node in G:
-    if node in node_groups[0]:
-        color_map.append("blue")
-    else:
-        color_map.append("green")
-nx.draw(G, node_color=color_map, with_labels=True)
-plt.show()
-
-# %% [markdown]
-# ## Using a subset of the data
-#
-
-# %%
-indp2 = faiss.index_factory(
-    sentence_embeddings2.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
-)
-faiss.normalize_L2(sentence_embeddings2)  # to be used for inner product computation
-# setting the number of neighbors to consider for graph connectivity
-neighbors2 = 5
-indp2.train(sentence_embeddings2)
-indp2.add(sentence_embeddings2)
-distance_matric2, positions2 = indp2.search(
-    sentence_embeddings2, sentence_embeddings2.shape[0]
-)
-
-# %%
-B = kneighbors_graph(
-    distance_matric2, neighbors2, mode="connectivity", include_self=False
-)
-B.toarray()[0]
-
-
-# %%
-# #!pip install cdlib
-
-# %% [markdown]
-#
-
-# %%
 
 # %%
 # generates colors to use for graph
@@ -285,38 +167,215 @@ def draw_communities_graph(graph, colors, com):
 
 
 # %%
+indp2 = faiss.index_factory(
+    sentence_embeddings2.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
+)
+faiss.normalize_L2(sentence_embeddings2)  # to be used for inner product computation
+# setting the number of neighbors to consider for graph connectivity
+neighbors2 = 3
+indp2.train(sentence_embeddings2)
+indp2.add(sentence_embeddings2)
+distance_matric2, positions2 = indp2.search(
+    sentence_embeddings2, sentence_embeddings2.shape[0]
+)
+
+# %%
+B = kneighbors_graph(
+    distance_matric2, neighbors2, mode="connectivity", include_self=False
+)
+B.toarray()[0]
+
+# %%
 # load the graph
-G2 = nx.from_numpy_matrix(B)
+G2 = nx.from_numpy_matrix(B, create_using=nx.Graph())
 print(G2)
 # visualize the graph
 nx.draw(G2, with_labels=True)
 
 # %%
+# applying a community algorithm to the graph to identify subgroups
 coms2 = algorithms.leiden(G2)
-
-# %%
 draw_communities_graph(G2, generate_colors(coms2), coms2)
 
-# %% [markdown]
-# ## Looking at sample output of the leiden model
+# %%
+list(to_use2.comment[coms2.communities[0]])  # Observation on hand washing
 
 # %%
 list(to_use2.comment[coms2.communities[2]])  # belief that the disease exists
 
 # %%
-list(to_use2.comment[coms2.communities[3]])  # belief on hand washing
+list(to_use2.comment[coms2.communities[1]])  # belief on wearing of masks
 
 # %%
-list(to_use2.comment[coms2.communities[0]])  # Observations on mask wearing
+list(to_use2.comment[coms2.communities[0]])  # Believe masks are not effective
 
 # %%
-list(to_use2.comment[coms2.communities[1]])  #
+
+# %% [markdown]
+# # Working with the larger dataset
 
 # %%
-G = nx.from_numpy_matrix(A)
+indp = faiss.index_factory(
+    sentence_embeddings.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
+)
+faiss.normalize_L2(sentence_embeddings)  # to be used for inner product computation
+neighbors = 10
 
 # %%
+indp.train(sentence_embeddings)
+indp.add(sentence_embeddings)
+distance_matric, position = indp.search(
+    sentence_embeddings, sentence_embeddings.shape[0]
+)  # create similarity matrix for the data
+
+# %%
+# create a KNN network with n neighbors using the cosine similarity matrix
+A = kneighbors_graph(distance_matric, 5, mode="connectivity", include_self=False)
+A.toarray()[0]
+
+# %%
+# load the graph
+G = nx.from_numpy_matrix(A, create_using=nx.Graph())
+print(G)
+# visualize the graph
+nx.draw(G, with_labels=False)
+
+# %%
+len(G.nodes), len(G.edges)
+
+# %%
+# using leiden community detection algorithm on the dataset
 coms = algorithms.leiden(G)
+draw_communities_graph(G, generate_colors(coms), coms)
+
+# %%
+len(coms.communities)
+
+# %%
+for index in range(len(coms.communities)):
+    print(data.comment[coms.communities[index]].index)
+    print("######################NEW Group####")
+
+# %%
+list(
+    data.iloc[[158, 161, 162, 163, 164, 165, 166, 167, 168, 171]].comment
+)  # belief about mask wearing by children
+
+# %%
+list(
+    data.iloc[
+        [
+            89,
+            92,
+            94,
+            104,
+            108,
+            110,
+            115,
+            116,
+            117,
+            119,
+            120,
+            126,
+            136,
+            139,
+            140,
+            143,
+            153,
+            155,
+            156,
+            157,
+            159,
+            169,
+            173,
+            180,
+            183,
+            184,
+            185,
+            186,
+            187,
+            189,
+            192,
+            193,
+            197,
+            198,
+            199,
+            208,
+            215,
+            216,
+            218,
+            270,
+            291,
+        ]
+    ].comment
+)
+
+# %%
+list(
+    data.iloc[
+        [
+            0,
+            1,
+            3,
+            4,
+            7,
+            13,
+            18,
+            22,
+            23,
+            24,
+            28,
+            31,
+            33,
+            36,
+            38,
+            64,
+            67,
+            75,
+            79,
+            85,
+            145,
+            328,
+            330,
+            331,
+            341,
+            343,
+        ]
+    ].comment
+)
+
+# %%
+list(
+    data.iloc[
+        [
+            2,
+            27,
+            30,
+            32,
+            35,
+            37,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            65,
+            66,
+            80,
+            83,
+            84,
+            338,
+        ]
+    ].comment
+)
+
+# %%
+## Using walktrap community detection algorithm on the data subset
 
 # %%
 comsw = algorithms.walktrap(G)
@@ -335,56 +394,17 @@ list(to_use2.comment[comsw2.communities[1]])
 list(to_use2.comment[comsw2.communities[2]])
 
 # %%
-nx.draw(G, with_labels=True)
+list(to_use2.comment[comsw2.communities[3]])
 
 # %%
-coms = algorithms.leiden(G)
-
-# %%
-draw_communities_graph(G, generate_colors(coms), coms)
-
-# %%
-for i in range(len(coms.communities)):
-    print(data.comment[coms.communities[i]])
-    print("######NEW Group###")
 
 # %% [markdown]
-# # Using the distance measure
-
-# %%
-ind_dis = faiss.index_factory(
-    sentence_embeddings2.shape[1], "Flat"
-)  # faiss.METRIC_INNER_PRODUCT)
-# setting the number of neighbors to consider for graph connectivity
-neighbors2 = 5
-ind_dis.train(sentence_embeddings2)
-ind_dis.add(sentence_embeddings2)
-dis_matric, dis_pos = ind_dis.search(
-    sentence_embeddings2, sentence_embeddings2.shape[0]
-)
-
-# %%
-dis_matric
-
-# %%
-C = kneighbors_graph(dis_matric, neighbors2, mode="connectivity", include_self=False)
-C.toarray()[0]
-
-# %%
-Gc = nx.from_numpy_matrix(C)
-comsc = algorithms.leiden(Gc)
-
-# %%
-draw_communities_graph(Gc, generate_colors(comsc), comsc)
-
-# %%
-to_use2.comment[comsc.communities[0]]
-
-# %%
-to_use2.comment[comsc.communities[1]]
-
-# %%
-to_use2.comment[comsc.communities[2]]
+# ## General observations
+#
+# * The higher the number of neigbors in the graph, the bigger the clusters formed. Need to agree on an average number of comments that should come through before algorithm is run in order to choose a suitable value for the number of neighbors.
+#
+# * Some keywords seem to influence the performance of the model. For example grouping of sentences with the word "existe" and its negation "n'existe pas" suggests the sentences are brought together by the word without much impact of context. Need to investigate more
+#
 
 # %% [markdown]
 # https://towardsdatascience.com/community-detection-algorithms-9bd8951e7dae
