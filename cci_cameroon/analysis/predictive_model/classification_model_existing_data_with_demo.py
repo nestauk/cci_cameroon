@@ -52,6 +52,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from sentence_transformers import SentenceTransformer
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 # Set directory
 project_directory = cci_cameroon.PROJECT_DIR
@@ -324,8 +325,17 @@ cm_KNN = multilabel_confusion_matrix(y_test, knnPredictions)
 
 # %%
 # Look at the results for the first code
-print(codes[0].replace("_", " "))
-cm_KNN[0]
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_KNN[0])
+disp.plot()
+plt.title(codes[0].replace("_", " "))
+plt.show()
+
+# %%
+# Look at the results for the second code
+print(codes[1].replace("_", " "))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_KNN[1])
+disp.plot()
+plt.show()
 
 # %% [markdown]
 # ### Live view of the model
