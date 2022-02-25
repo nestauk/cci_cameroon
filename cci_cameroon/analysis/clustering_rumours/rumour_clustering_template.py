@@ -35,6 +35,11 @@ from sklearn.neighbors import kneighbors_graph
 import networkx as nx
 import cdlib
 from cdlib import algorithms
+from cci_cameroon.getters.clustering_helper_functions import (
+    generate_colors,
+    draw_communities_graph,
+    generate_adjacency_matrix,
+)
 
 # %% [markdown]
 # # Approach used
@@ -71,6 +76,78 @@ data_df.loc[data_df.language == "en"]
 translator = Translator()
 
 # %%
+# File links
+w1_file = "multi_label_output_w1.xlsx"
+w2_file = "workshop2_comments_french.xlsx"
+# Read workshop files
+w1 = pd.read_excel(f"{project_directory}/inputs/data/" + w1_file)
+w2 = pd.read_excel(f"{project_directory}/inputs/data/" + w2_file)
+
+# %%
+# Adding language column
+w1["language"] = w1["comment"].apply(lambda x: detect(x))
+
+# %%
+# Slicing the data into en, es and remaining
+en = w1[w1.language == "en"].copy()
+es = w1[w1.language == "es"].copy()
+w1 = w1[~w1.language.isin(["en", "es"])].copy()
+
+# %%
+# Translating the English and Spanish comments into French
+en["comment"] = en.comment.apply(translator.translate, src="en", dest="fr").apply(
+    getattr, args=("text",)
+)
+es["comment"] = es.comment.apply(translator.translate, src="es", dest="fr").apply(
+    getattr, args=("text",)
+)
+
+# %%
+# Merge back together
+w1 = pd.concat([w1, en, es], ignore_index=True)
+
+# %%
+# Reemove language
+w1.drop("language", axis=1, inplace=True)
+
+# %%
+# Join the two workshops files together
+labelled_data = w1.append(w2, ignore_index=True)
+
+# %%
+# Remove white space before and after text
+labelled_data.replace(r"^ +| +$", r"", regex=True, inplace=True)
+
+# %%
+# Removing 48 duplicate code/comment pairs (from W1)
+print("Before duplicate pairs removed: " + str(len(labelled_data)))
+labelled_data.drop_duplicates(subset=["code", "comment"], inplace=True)
+print("After duplicate pairs removed: " + str(len(labelled_data)))
+
+# %%
+# Removing small count codes
+to_remove = list(
+    labelled_data.code.value_counts()[labelled_data.code.value_counts() < 10].index
+)
+labelled_data = labelled_data[~labelled_data.code.isin(to_remove)].copy()
+
+# %%
+# Dataset for modelling
+model_data = labelled_data.copy()
+# Create category ID column from the code field (join by _ into one string)
+model_data["category_id"] = model_data["code"].str.replace(" ", "_")
+id_to_category = dict(model_data[["category_id", "code"]].values)
+model_data = (
+    model_data.groupby("comment")["category_id"].apply(list).to_frame().reset_index()
+)
+
+# %%
+model_data = model_data.reset_index()
+
+# %%
+model_data.shape
+
+# %%
 english_df = data_df[data_df.language == "en"].copy()
 spanish_df = data_df[data_df.language == "es"].copy()
 data_df = data_df[~data_df.language.isin(["en", "es"])].copy()
@@ -105,13 +182,12 @@ data.reset_index(inplace=True)
 data.shape
 
 # %%
-# Converting the codes into integers
+# Converting the codes into integers to act as ground truth
 data["cluster"] = data.code.factorize()[0]
 
 # %%
 # using the french_semantic model for word embedding
 model = SentenceTransformer("Sahajtomar/french_semantic")
-sentence_embeddings = model.encode(data.comment)
 
 # %%
 data[
@@ -136,45 +212,6 @@ to_use2 = (
 sentence_embeddings2 = model.encode(to_use2.comment)
 
 # %%
-comments_df = data[["id", "comment", "cluster"]].copy()
-
-
-# %%
-# generates colors to use for graph
-def generate_colors(com):
-    colors = []
-    for i in range(len(com.communities)):
-        colors.append("#%06X" % randint(0, 0xFFFFFF))
-    return colors
-
-
-# method to draw the identified communities
-def draw_communities_graph(graph, colors, com):
-    """draws communities identified in a network. Recieves a graph, colors to use and community object"""
-    color_map = []
-    for node in graph:
-        for i in range(len(com.communities)):
-            if node in com.communities[i]:
-                color_map.append(colors[i])
-    nx.draw(graph, node_color=color_map, with_labels=True)
-    plt.show()
-
-
-def generate_adjacency_matrix(positions, n_neighbors, dimension):
-    """Takes the positions obtained from the cosine similarity computation, the number of neighbors to consider,
-    the size of the matrix and generates adjacency matrix. Returns an adjacency matrix"""
-    adjacency_matrix = np.zeros(
-        [dimension, dimension]
-    )  # initialize the adjacency matrix to zeros
-    # loop through the positions and set neighbors accordingly.
-    for row in range(dimension):
-        for num in range(n_neighbors):
-            # set the neighbors in the adjacency matrix
-            adjacency_matrix[row, positions[row][num]] = 1
-    return adjacency_matrix
-
-
-# %%
 indp2 = faiss.index_factory(
     sentence_embeddings2.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
 )
@@ -193,9 +230,6 @@ adjacency2 = generate_adjacency_matrix(
 )
 
 # %%
-np.fill_diagonal(adjacency2, 0)  # takes off self-links
-
-# %%
 # load the graph
 GG2 = nx.from_numpy_matrix(adjacency2, create_using=nx.Graph())
 print(GG2)
@@ -205,13 +239,12 @@ nx.draw(GG2, with_labels=True)
 # %%
 # applying a community algorithm to the graph to identify subgroups
 coms22 = algorithms.leiden(GG2)
-draw_communities_graph(GG2, generate_colors(coms22), coms22)
+draw_communities_graph(
+    GG2, generate_colors(len(coms22.communities)), coms22.communities
+)
 
 # %%
 evaluation.modularity_density(GG2, coms22)
-
-# %%
-coms22.communities
 
 # %%
 list(to_use2.comment.iloc[coms22.communities[0]])
@@ -222,6 +255,11 @@ list(
 )  # inspecting the ground truth as per labelling exercise
 
 # %%
+ax = plt.figure(figsize=(10, 5))
+to_use2.category_id[coms22.communities[0]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
 list(to_use2.comment.iloc[coms22.communities[1]])
 
 # %%
@@ -230,10 +268,20 @@ list(
 )  # inspecting the ground truth as per labelling exercise
 
 # %%
+ax = plt.figure(figsize=(10, 5))
+to_use2.category_id[coms22.communities[1]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
 list(to_use2.comment.iloc[coms22.communities[2]])  # Belief that the disease exists
 
 # %%
 list(to_use2.category_id[coms22.communities[2]])
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+to_use2.category_id[coms22.communities[2]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
 
 # %%
 # evaluating connectivity of the communities formed  using modularity
@@ -244,6 +292,9 @@ modularity2.score
 
 # %% [markdown]
 # # Working with a larger dataset
+
+# %%
+sentence_embeddings = model.encode(data.comment)
 
 # %%
 indp = faiss.index_factory(
@@ -260,13 +311,7 @@ distance_matric, position = indp.search(
 )  # create similarity matrix for the data
 
 # %%
-position.shape
-
-# %%
 AA = generate_adjacency_matrix(position, neighbors, sentence_embeddings.shape[0])
-
-# %%
-np.fill_diagonal(AA, 0)
 
 # %%
 # load the graph
@@ -280,7 +325,7 @@ nx.draw(GG, with_labels=False)
 comss = algorithms.leiden(GG)
 
 # %%
-draw_communities_graph(GG, generate_colors(comss), comss)
+draw_communities_graph(GG, generate_colors(len(comss.communities)), comss.communities)
 
 # %%
 len(comss.communities)
@@ -289,16 +334,38 @@ len(comss.communities)
 # ## Sample groups formed by the model
 
 # %%
-list(data.iloc[comss.communities[7]].comment)
+list(
+    data.iloc[comss.communities[7]].comment
+)  # Observation about mask wearing by children
 
 # %%
-list(data.iloc[comss.communities[1]].comment)
+ax = plt.figure(figsize=(10, 5))
+data.category_id[comss.communities[7]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
 
 # %%
-list(data.iloc[comss.communities[2]].comment)
+list(data.iloc[comss.communities[1]].comment)  # belief that disease exists
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+data.category_id[comss.communities[1]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
+list(data.iloc[comss.communities[2]].comment)  # belief about wearing face masks
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+data.category_id[comss.communities[2]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
 
 # %%
 list(data.iloc[comss.communities[5]].comment)
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+data.category_id[comss.communities[5]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
 
 # %%
 # evaluating the model using modularity
@@ -306,6 +373,115 @@ modularity = evaluation.modularity_density(GG, comss)
 
 # %%
 modularity.score
+
+# %%
+
+# %%
+
+# %% [markdown]
+# # Using data with eight codes
+
+# %%
+model_data_embeddings = model.encode(model_data.comment)
+
+# %%
+indexf = faiss.index_factory(
+    model_data_embeddings.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
+)
+faiss.normalize_L2(model_data_embeddings)  # to be used for inner product computation
+neighbors = 15  # number of neighbors for the graph
+indexf.train(model_data_embeddings)
+indexf.add(model_data_embeddings)
+distance_f, positions_f = indexf.search(
+    model_data_embeddings, model_data_embeddings.shape[0]
+)
+
+# %%
+A_f = generate_adjacency_matrix(positions_f, neighbors, model_data_embeddings.shape[0])
+
+# %%
+# load the graph
+G_f = nx.from_numpy_matrix(A_f, create_using=nx.Graph())
+print(G_f)
+# visualize the graph
+nx.draw(G_f, with_labels=False)
+
+# %%
+coms_f = algorithms.leiden(G_f)
+
+# %%
+len(coms_f.communities)
+
+# %%
+draw_communities_graph(
+    G_f, generate_colors(len(coms_f.communities)), coms_f.communities
+)
+
+# %%
+list(model_data.iloc[coms_f.communities[0]].comment)
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+model_data.category_id[coms_f.communities[0]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
+list(model_data.iloc[coms_f.communities[1]].comment)
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+model_data.category_id[coms_f.communities[1]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
+list(model_data.iloc[coms_f.communities[2]].comment)
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+model_data.category_id[coms_f.communities[2]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
+list(model_data.iloc[coms_f.communities[3]].comment)
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+model_data.category_id[coms_f.communities[3]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
+list(model_data.iloc[coms_f.communities[4]].comment)
+
+# %%
+ax = plt.figure(figsize=(10, 5))
+model_data.category_id[coms_f.communities[4]].value_counts().plot(kind="bar")
+plt.title("Distribution of comments based on ground truth")
+
+# %%
+list(model_data.iloc[coms_f.communities[5]].comment)
+
+# %%
+list(model_data.iloc[coms_f.communities[6]].comment)
+
+# %%
+list(model_data.iloc[coms_f.communities[7]].comment)
+
+# %%
+list(model_data.iloc[coms_f.communities[8]].comment)
+
+# %%
+list(model_data.iloc[coms_f.communities[9]].comment)
+
+# %%
+list(model_data.iloc[coms_f.communities[10]].comment)
+
+# %%
+list(model_data.iloc[coms_f.communities[11]].comment)
+
+# %%
+list(model_data.iloc[coms_f.communities[12]].comment)
+
+# %%
 
 # %% [markdown]
 # ## General observations
@@ -317,20 +493,42 @@ modularity.score
 #
 # * Some subgroups produced by the algorithm could be merged into a larger group without losing information. Need to optimise the algorithm.
 #
+# * Findind a suitable metric that could be used to assess the quality of comments in subgroups
 #
-#
+
+# %% [markdown]
+# ## Other community detection algorithms
 
 # %%
 ## Using walktrap community detection algorithm on the data subset
 
 # %%
-# comsw = algorithms.walktrap(G)
-# comsw2 = algorithms.walktrap(G2)
+comsw2 = algorithms.walktrap(GG2)
 
 # %%
-# draw_communities_graph(G2, generate_colors(comsw2), comsw2)
+draw_communities_graph(
+    GG2, generate_colors(len(comsw2.communities)), comsw2.communities
+)
 
 # %%
 
-# %% [markdown]
-#
+# %%
+
+# %%
+to_use2.to_excel("to_use2.xlsx", index=False)
+
+# %%
+model_data.to_excel("model_data.xlsx", index=False)
+
+# %%
+data.to_excel("data.xlsx", index=False)
+
+# %%
+# to_use2 = pd.read_excel("to_use2.xlsx")
+model_data = pd.read_excel("model_data.xlsx")
+# data= pd.read_excel("data.xlsx")
+
+# %%
+model_data.head()
+
+# %%
