@@ -138,9 +138,21 @@ def predict_rumour(thres):
 # File links
 w1_file = "multi_label_output_w1.xlsx"
 w2_file = "workshop2_comments_french.xlsx"
+# w2_file = "retained_comments_w2.xlsx"
 # Read workshop files
 w1 = pd.read_excel(f"{project_directory}/inputs/data/" + w1_file)
 w2 = pd.read_excel(f"{project_directory}/inputs/data/" + w2_file)
+
+# %%
+pd.set_option("display.max_columns", None)  # or 1000
+pd.set_option("display.max_rows", None)  # or 1000
+pd.set_option("display.max_colwidth", -1)  # or 199
+
+# %%
+w2.head(3)
+
+# %%
+print(w1.shape, w2.shape)
 
 # %%
 # Adding language column
@@ -202,6 +214,9 @@ labelled_data = labelled_data[~labelled_data.code.isin(to_remove)].copy()
 # Three cases where a comment is labelled with two different codes (from w1 questions)
 labelled_data.id.value_counts().head(5)
 
+# %%
+labelled_data.code.value_counts()
+
 # %% [markdown]
 # The total cases of multiple code assignments is caused by both the outputs of the multiple assinments in workshop 1 and cases where a comment is assigned to different codes in the IFRC dataset.
 
@@ -241,6 +256,9 @@ labelled_data.code.value_counts().plot.bar()
 X_train, X_test, y_train, y_test = train_test_split(
     model_data["comment"], model_data["category_id"], test_size=0.20, random_state=0
 )
+
+# %%
+len(y_test)
 
 # %%
 # Transform Y into multilabel format
@@ -312,7 +330,15 @@ rfClassifier.fit(X_train_embeddings, y_train)
 rfPreds = rfClassifier.predict(X_test_embeddings)
 
 # %%
-# Collect and report all results
+# Collect and report all results - full set
+metricsReport("knnClf_tranformer", y_test, knnPredictions)
+metricsReport("dtClassifier_transformer", y_test, dtPreds)
+metricsReport("rfClassifier_transformer", y_test, rfPreds)
+print("Results from all models")
+ModelsPerformance
+
+# %%
+# Collect and report all results - reduced set
 metricsReport("knnClf_tranformer", y_test, knnPredictions)
 metricsReport("dtClassifier_transformer", y_test, dtPreds)
 metricsReport("rfClassifier_transformer", y_test, rfPreds)
@@ -325,9 +351,9 @@ cm_KNN = multilabel_confusion_matrix(y_test, knnPredictions)
 
 # %%
 # Look at the results for the first code
-disp = ConfusionMatrixDisplay(confusion_matrix=cm_KNN[0])
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_KNN[1])
 disp.plot()
-plt.title(codes[0].replace("_", " "))
+plt.title(codes[1].replace("_", " "))
 plt.show()
 
 # %%
@@ -335,6 +361,13 @@ plt.show()
 print(codes[1].replace("_", " "))
 disp = ConfusionMatrixDisplay(confusion_matrix=cm_KNN[1])
 disp.plot()
+plt.show()
+
+# %%
+# Look at the results for a code with a low comment count
+disp = ConfusionMatrixDisplay(confusion_matrix=cm_KNN[7])
+disp.plot()
+plt.title(codes[7].replace("_", " "))
 plt.show()
 
 # %% [markdown]
