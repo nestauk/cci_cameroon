@@ -44,6 +44,7 @@ from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import math
 
 # Set directory
 project_directory = cci_cameroon.PROJECT_DIR
@@ -146,6 +147,9 @@ model_data = (
 )
 
 # %%
+model_data["category_id"]
+
+# %%
 # Split data
 X_train, X_test, y_train, y_test = train_test_split(
     model_data["comment"], model_data["category_id"], test_size=0.20, random_state=0
@@ -223,9 +227,6 @@ for preds in pred_proba:
 preds_df = pd.DataFrame(np.column_stack(code_lists), columns=codes)
 
 # %%
-pred_proba
-
-# %%
 preds_df.shape
 
 # %%
@@ -259,6 +260,9 @@ import seaborn as sns
 # %%
 from matplotlib import rcParams
 
+# %% [markdown]
+# ### Prediction probabilities for true Y labels
+
 # %%
 rcParams["figure.figsize"] = 14, 16
 fig, axs = plt.subplots(4, 2)
@@ -284,6 +288,7 @@ test_set_df = pd.DataFrame(y_test, columns=codes)
 test_set_df.shape
 
 # %%
+rcParams["figure.figsize"] = 4, 4
 ((test_set_df.sum() / 255) * 100).plot(kind="bar")
 
 
@@ -309,13 +314,16 @@ fpr6, tpr6, roc_auc6, thresholds6 = get_roc_scores(y_test, pred_proba, 6)
 fpr7, tpr7, roc_auc7, thresholds7 = get_roc_scores(y_test, pred_proba, 7)
 
 # %%
-thresholds1
-
-# %%
 import math
 
-# %%
-list(tpr0)
+# %% [markdown]
+# ### ROC curve and Geometric Mean for optimum threshold setting
+
+# %% [markdown]
+# g-mean for each threshold true positives and 1 - false positives
+
+# %% [markdown]
+# https://machinelearningmastery.com/threshold-moving-for-imbalanced-classification/
 
 # %%
 # calculate the g-mean for each threshold
@@ -325,7 +333,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds0[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[0].replace("_", " "))
 plt.plot(fpr0, tpr0, "b", label="AUC = %0.2f" % roc_auc0)
 plt.legend(loc="lower right")
@@ -344,7 +352,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds1[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[1].replace("_", " "))
 plt.plot(fpr1, tpr1, "b", label="AUC = %0.2f" % roc_auc1)
 plt.legend(loc="lower right")
@@ -363,7 +371,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds2[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[2].replace("_", " "))
 plt.plot(fpr2, tpr2, "b", label="AUC = %0.2f" % roc_auc2)
 plt.legend(loc="lower right")
@@ -382,7 +390,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds3[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[3].replace("_", " "))
 plt.plot(fpr3, tpr3, "b", label="AUC = %0.2f" % roc_auc3)
 plt.legend(loc="lower right")
@@ -401,7 +409,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds4[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[4].replace("_", " "))
 plt.plot(fpr4, tpr4, "b", label="AUC = %0.2f" % roc_auc4)
 plt.legend(loc="lower right")
@@ -420,7 +428,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds5[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[5].replace("_", " "))
 plt.plot(fpr5, tpr5, "b", label="AUC = %0.2f" % roc_auc5)
 plt.legend(loc="lower right")
@@ -439,7 +447,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds6[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[6].replace("_", " "))
 plt.plot(fpr6, tpr6, "b", label="AUC = %0.2f" % roc_auc6)
 plt.legend(loc="lower right")
@@ -458,7 +466,7 @@ ix = np.argmax(gmeans)
 print("Best Threshold=%f, G-Mean=%.3f" % (thresholds7[ix], gmeans[ix]))
 
 # %%
-rcParams["figure.figsize"] = 10, 10
+rcParams["figure.figsize"] = 5, 5
 plt.title("ROC: " + codes[7].replace("_", " "))
 plt.plot(fpr7, tpr7, "b", label="AUC = %0.2f" % roc_auc7)
 plt.legend(loc="lower right")
@@ -468,3 +476,55 @@ plt.ylim([0, 1])
 plt.ylabel("True Positive Rate")
 plt.xlabel("False Positive Rate")
 plt.show()
+
+# %% [markdown]
+# ## Calibration curves
+
+# %% [markdown]
+# Mean predicted probability verses fraction of positives at different intervals
+
+# %%
+from sklearn.calibration import calibration_curve
+
+
+# %%
+def get_class_preds(y_test, pred_proba, num):
+    test_item = []
+    for item in y_test:
+        test_item.append(item[num])
+    preds = pred_proba[num][:, 1]
+    prob_true, prob_pred = calibration_curve(test_item, preds, n_bins=5)
+    return prob_true, prob_pred
+
+
+# %%
+prob_true0, prob_pred0 = get_class_preds(y_test, pred_proba, 0)
+prob_true1, prob_pred1 = get_class_preds(y_test, pred_proba, 1)
+prob_true2, prob_pred2 = get_class_preds(y_test, pred_proba, 2)
+prob_true3, prob_pred3 = get_class_preds(y_test, pred_proba, 3)
+prob_true4, prob_pred4 = get_class_preds(y_test, pred_proba, 4)
+prob_true5, prob_pred5 = get_class_preds(y_test, pred_proba, 5)
+prob_true6, prob_pred6 = get_class_preds(y_test, pred_proba, 6)
+prob_true7, prob_pred7 = get_class_preds(y_test, pred_proba, 7)
+
+# %%
+prob_pred0
+
+# %%
+rcParams["figure.figsize"] = 15, 10
+
+plt.plot(list(prob_pred0), list(prob_true0), label=codes[0], marker="o")
+plt.plot(list(prob_pred1), list(prob_true1), label=codes[1], marker="o")
+plt.plot(list(prob_pred2), list(prob_true2), label=codes[2], marker="o")
+plt.plot(list(prob_pred3), list(prob_true3), label=codes[3], marker="o")
+plt.plot(list(prob_pred4), list(prob_true4), label=codes[4], marker="o")
+plt.plot(list(prob_pred5), list(prob_true5), label=codes[5], marker="o")
+plt.plot(list(prob_pred6), list(prob_true6), label=codes[6], marker="o")
+plt.plot(list(prob_pred7), list(prob_true7), label=codes[7], marker="o")
+plt.legend(fontsize=11)
+plt.xlabel("Mean predicted probability", fontsize=16)
+plt.ylabel("Fraction of positives", fontsize=16)
+
+plt.tight_layout()
+
+# %%
