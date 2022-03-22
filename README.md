@@ -19,6 +19,3 @@
 <small><p>Project based on <a target="_blank" href="https://github.com/nestauk/ds-cookiecutter">Nesta's data science project template</a>
 (<a href="http://nestauk.github.io/ds-cookiecutter">Read the docs here</a>).
 </small>
-
-## Summary
-We explore transformer models' usnig resulting text embeddings to compute text similarity scores. Both English and French models are explored with greated focus on french text similarity search. Faiss index is used to compute distances between text embeddings and compare their similarity. Equally, the cosign similarity score is used to evaluate model performance
