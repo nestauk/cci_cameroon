@@ -28,7 +28,7 @@ from sentence_transformers import SentenceTransformer
 import networkx as nx
 import cdlib
 from cdlib import algorithms
-from cci_cameroon.getters.clustering_helper_functions import (
+from cci_cameroon.pipeline.clustering_helper_functions import (
     generate_colors,
     draw_communities_graph,
     generate_adjacency_matrix,
