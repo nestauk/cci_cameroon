@@ -53,27 +53,27 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # %%
 # Read train/test data
 X_train = pd.read_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/X_train.xlsx", index_col="id"
+    f"{project_directory}/inputs/data/data_for_modelling/X_train.xlsx", index_col="id"
 )["comment"]
 X_test = pd.read_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/X_test.xlsx", index_col="id"
+    f"{project_directory}/inputs/data/data_for_modelling/X_test.xlsx", index_col="id"
 )["comment"]
 y_train = pd.read_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/y_train.xlsx", index_col="id"
+    f"{project_directory}/inputs/data/data_for_modelling/y_train.xlsx", index_col="id"
 )["category_id"]
 y_test = pd.read_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/y_test.xlsx", index_col="id"
+    f"{project_directory}/inputs/data/data_for_modelling/y_test.xlsx", index_col="id"
 )["category_id"]
 
 # %%
 # Data to use to train 'no response'
 no_response_train = pd.read_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/no_response_train.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/no_response_train.xlsx",
     index_col="id",
 )["comment"]
 
 no_response_test = pd.read_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/no_response_test.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/no_response_test.xlsx",
     index_col="id",
 )["comment"]
 

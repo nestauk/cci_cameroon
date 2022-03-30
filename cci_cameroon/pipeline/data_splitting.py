@@ -125,38 +125,38 @@ print(X_test.shape)
 # %%
 # Write into csv files
 X_train.to_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/X_train.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/X_train.xlsx",
     index=True,
     index_label="id",
 )
 
 X_test.to_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/X_test.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/X_test.xlsx",
     index=True,
     index_label="id",
 )
 
 y_train.to_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/y_train.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/y_train.xlsx",
     index=True,
     index_label="id",
 )
 
 y_test.to_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/y_test.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/y_test.xlsx",
     index=True,
     index_label="id",
 )
 
 # %%
 other_train.to_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/no_response_train.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/no_response_train.xlsx",
     index=True,
     index_label="id",
 )
 
 other_test.to_excel(
-    f"{project_directory}/outputs/data/data_for_modelling/no_response_test.xlsx",
+    f"{project_directory}/inputs/data/data_for_modelling/no_response_test.xlsx",
     index=True,
     index_label="id",
 )
