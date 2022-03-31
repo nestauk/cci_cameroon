@@ -41,6 +41,12 @@ ifrc_data = pd.read_excel(
 )
 
 # %%
+# Names of columns assigned here
+feedback_type = "TYPE OF FEEDBACK_TYPE DE RETOUR D'INFORMATION"
+code_col = "CODE"
+comment_col = "FEEDBACK COMMENT_COMMENTAIRE"
+
+# %%
 codes_remove = [
     "Belief that some people/institutions are making money because of the disease",
     "Belief that the outbreak has ended",
@@ -55,11 +61,8 @@ codes_remove = [
 
 # %%
 def get_other_codes(df):
-    other_codes = df[
-        df["TYPE OF FEEDBACK_TYPE DE RETOUR D'INFORMATION"]
-        == "Rumors_beliefs_observations"
-    ].copy()
-    other_codes = other_codes[["CODE", "FEEDBACK COMMENT_COMMENTAIRE"]].copy()
+    other_codes = df[df[feedback_type] == "Rumors_beliefs_observations"].copy()
+    other_codes = other_codes[[code_col, comment_col]].copy()
     other_codes.replace(r"^ +| +$", r"", regex=True, inplace=True)
     other_codes.columns = ["code", "comment"]
     other_codes.drop_duplicates(subset=["code", "comment"], inplace=True)
@@ -77,9 +80,6 @@ def get_other_codes(df):
 
 # %%
 other_codes = get_other_codes(ifrc_data)
-
-# %%
-# other_codes.reset_index('')
 
 # %%
 # Sort to ensure the order is consistent each time before splitting
@@ -105,22 +105,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 other_train, other_test = train_test_split(
     other_codes["comment"], test_size=0.20, random_state=1
 )
-
-# %%
-X_train
-
-# %%
-other_train
-
-# %%
-len(other_test)
-
-# %%
-X_train
-
-# %%
-print(X_train.shape)
-print(X_test.shape)
 
 # %%
 # Write into csv files
@@ -160,8 +144,3 @@ other_test.to_excel(
     index=True,
     index_label="id",
 )
-
-# %%
-other_train
-
-# %%

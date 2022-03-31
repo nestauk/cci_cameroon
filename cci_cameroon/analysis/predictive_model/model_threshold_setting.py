@@ -46,6 +46,11 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import math
 
+import seaborn as sns
+from matplotlib import rcParams
+import sklearn.metrics as metrics
+from sklearn.calibration import calibration_curve
+
 # Set directory
 project_directory = cci_cameroon.PROJECT_DIR
 
@@ -253,13 +258,6 @@ for code in codes:
     x = preds_df[(preds_df.actual1 == code) | (preds_df.actual2 == code)][code]
     prediction_lists.append(x)
 
-# %%
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-# %%
-from matplotlib import rcParams
-
 # %% [markdown]
 # ### Prediction probabilities for true Y labels
 
@@ -277,9 +275,6 @@ sns.histplot(x=prediction_lists[6], bins=20, ax=axs[2, 1])
 sns.histplot(x=prediction_lists[7], bins=20, ax=axs[3, 1])
 
 plt.tight_layout(pad=0)
-
-# %%
-import sklearn.metrics as metrics
 
 # %%
 test_set_df = pd.DataFrame(y_test, columns=codes)
@@ -312,9 +307,6 @@ fpr4, tpr4, roc_auc4, thresholds4 = get_roc_scores(y_test, pred_proba, 4)
 fpr5, tpr5, roc_auc5, thresholds5 = get_roc_scores(y_test, pred_proba, 5)
 fpr6, tpr6, roc_auc6, thresholds6 = get_roc_scores(y_test, pred_proba, 6)
 fpr7, tpr7, roc_auc7, thresholds7 = get_roc_scores(y_test, pred_proba, 7)
-
-# %%
-import math
 
 # %% [markdown]
 # ### ROC curve and Geometric Mean for optimum threshold setting
@@ -477,15 +469,12 @@ plt.ylabel("True Positive Rate")
 plt.xlabel("False Positive Rate")
 plt.show()
 
+
 # %% [markdown]
 # ## Calibration curves
 
 # %% [markdown]
 # Mean predicted probability verses fraction of positives at different intervals
-
-# %%
-from sklearn.calibration import calibration_curve
-
 
 # %%
 def get_class_preds(y_test, pred_proba, num):

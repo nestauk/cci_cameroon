@@ -16,7 +16,7 @@
 # ---
 
 # %% [markdown]
-# ## Model running and report results
+# ## Classifcation: Model test and report results
 
 # %%
 # Read in libraries
@@ -36,6 +36,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.svm import SVC
 from nltk.corpus import stopwords
+from sklearn.metrics import f1_score
+import matplotlib.pyplot as plt
+import pickle
 
 # Project modules
 import cci_cameroon
@@ -139,6 +142,23 @@ nb.fit(X_train_embeddings_fr, y_train)
 y_pred_nb = nb.predict(X_test_embeddings_fr)
 
 # %%
+f1_svm = f1_score(y_test, y_pred_svm, average="micro")
+f1_knn = f1_score(y_test, y_pred_knn, average="micro")
+f1_rf = f1_score(y_test, y_pred_rf, average="micro")
+f1_dt = f1_score(y_test, y_pred_dt, average="micro")
+f1_nb = f1_score(y_test, y_pred_nb, average="micro")
+f1_scores = [f1_knn, f1_svm, f1_nb, f1_rf, f1_dt]
+
+# %%
+plt.bar(["knn", "svm", "naive bayes", "random forest", "decision tree"], f1_scores)
+plt.xticks(rotation=45, ha="right")
+plt.title("Micro F1 scores of models on test set")
+plt.ylabel("Micro F1")
+plt.xlabel("Models")
+
+plt.show()
+
+# %%
 # Update test set and predictions to include class for 'no class'
 y_test = mtr.add_y_class(y_test)
 y_pred_svm = mtr.add_y_class(y_pred_svm)
@@ -184,3 +204,6 @@ counts = mtr.word_counts_class(codes, pred_proba, X_train, stop)
 mtr.common_words_plots(codes, counts)
 
 # %%
+# save the best model to disk
+filename = f"{project_directory}/outputs/models/final_classification_model.sav"
+pickle.dump(knn, open(filename, "wb"))
