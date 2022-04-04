@@ -62,128 +62,17 @@ import matplotlib
 project_directory = cci_cameroon.PROJECT_DIR
 
 # %%
-data_df = pd.read_excel(
-    f"{project_directory}/inputs/data/irfc_staff_labelled_data.xlsx"
-)
-
-# %%
-data_df["language"] = data_df.comment.apply(lambda x: detect(x))
-
-# %%
-pd.DataFrame(data_df.groupby("language").comment.count().sort_values(ascending=True))
-
-# %%
-translator = Translator()
-
-# %%
-# File links
-w1_file = "multi_label_output_w1.xlsx"
-w2_file = "workshop2_comments_french.xlsx"
-# Read workshop files
-w1 = pd.read_excel(f"{project_directory}/inputs/data/" + w1_file)
-w2 = pd.read_excel(f"{project_directory}/inputs/data/" + w2_file)
-
-# %%
-# Adding language column
-w1["language"] = w1["comment"].apply(lambda x: detect(x))
-
-# %%
-# Slicing the data into en, es and remaining
-en = w1[w1.language == "en"].copy()
-es = w1[w1.language == "es"].copy()
-w1 = w1[~w1.language.isin(["en", "es"])].copy()
-
-# %%
-# Translating the English and Spanish comments into French
-en["comment"] = en.comment.apply(translator.translate, src="en", dest="fr").apply(
-    getattr, args=("text",)
-)
-es["comment"] = es.comment.apply(translator.translate, src="es", dest="fr").apply(
-    getattr, args=("text",)
-)
-
-# %%
-# Merge back together
-w1 = pd.concat([w1, en, es], ignore_index=True)
-
-# %%
-# Reemove language
-w1.drop("language", axis=1, inplace=True)
-
-# %%
-# Join the two workshops files together
-labelled_data = w1.append(w2, ignore_index=True)
-
-# %%
-# Remove white space before and after text
-labelled_data.replace(r"^ +| +$", r"", regex=True, inplace=True)
-
-# %%
-# Removing 48 duplicate code/comment pairs (from W1)
-print("Before duplicate pairs removed: " + str(len(labelled_data)))
-labelled_data.drop_duplicates(subset=["code", "comment"], inplace=True)
-print("After duplicate pairs removed: " + str(len(labelled_data)))
-
-# %%
-# Removing small count codes
-to_remove = list(
-    labelled_data.code.value_counts()[labelled_data.code.value_counts() < 10].index
-)
-labelled_data = labelled_data[~labelled_data.code.isin(to_remove)].copy()
-
-# %%
-# Dataset for modelling
-model_data = labelled_data.copy()
-# Create category ID column from the code field (join by _ into one string)
-model_data["category_id"] = model_data["code"].str.replace(" ", "_")
-id_to_category = dict(model_data[["category_id", "code"]].values)
-model_data = (
-    model_data.groupby("comment")["category_id"].apply(list).to_frame().reset_index()
-)
-
-# %%
-model_data = model_data.reset_index()
+# read cleaned data from inputs folder
+to_use2 = pd.read_excel(f"{project_directory}/inputs/data/to_use2.xlsx")
+model_data = pd.read_excel(f"{project_directory}/inputs/data/model_data.xlsx")
+data = pd.read_excel(f"{project_directory}/inputs/data/data.xlsx")
 
 # %%
 model_data.shape
 
 # %%
-english_df = data_df[data_df.language == "en"].copy()
-spanish_df = data_df[data_df.language == "es"].copy()
-data_df = data_df[~data_df.language.isin(["en", "es"])].copy()
-
-# %%
-english_df["comment"] = english_df.comment.apply(
-    translator.translate, src="en", dest="fr"
-).apply(getattr, args=("text",))
-spanish_df["comment"] = spanish_df.comment.apply(
-    translator.translate, src="es", dest="fr"
-).apply(getattr, args=("text",))
-
-# %%
-data = pd.concat([data_df, english_df, spanish_df], ignore_index=True)
-
-# %%
-data.drop("language", axis=1, inplace=True)
-
-# %%
-data.shape
-
-# %%
-data["category_id"] = data.first_code.factorize()[0]
-
-# %%
 # checking the distribution of the codes in the data
 data.groupby("first_code").comment.count().plot(kind="bar")
-
-# %%
-data = data.drop_duplicates(["comment"])
-data.reset_index(inplace=True)
-data.shape
-
-# %%
-# Converting the codes into integers to act as ground truth
-data["cluster"] = data.code.factorize()[0]
 
 # %%
 # using the french_semantic model for word embedding
@@ -244,8 +133,6 @@ nx.draw(NG)
 
 # %%
 sentence_embeddings400 = model.encode(data.comment)
-
-# %%
 
 # %%
 # we shuffle the data and split it up into equal data chunks. We usBeginning with a chunk
@@ -1030,19 +917,3 @@ comsw2 = algorithms.walktrap(GG2)
 draw_communities_graph(
     GG2, generate_colors(len(comsw2.communities)), comsw2.communities
 )
-
-# %%
-# to_use2.to_excel("to_use2.xlsx",index=False)
-
-# %%
-# model_data.to_excel("model_data.xlsx",index=False)
-
-# %%
-# data.to_excel("data.xlsx",index=False)
-
-# %%
-to_use2 = pd.read_excel("to_use2.xlsx")
-model_data = pd.read_excel("model_data.xlsx")
-data = pd.read_excel("data.xlsx")
-
-# %%

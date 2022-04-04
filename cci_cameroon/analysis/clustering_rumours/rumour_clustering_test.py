@@ -49,15 +49,8 @@ project_directory = cci_cameroon.PROJECT_DIR
 
 
 # %%
-data_df = pd.read_excel(
-    f"{project_directory}/inputs/data/irfc_staff_labelled_data.xlsx"
-)
-
-# %%
 # load unclassified comments comming in from the classification model
-model_data = pd.read_excel(
-    "model_data.xlsx"
-)  # should be replaced with Izzy's output saved
+model_data = pd.read_excel(f"{project_directory}/inputs/data/model_data.xlsx")
 column_name = "comment"  # holds the column of interest in the data
 
 # %%
