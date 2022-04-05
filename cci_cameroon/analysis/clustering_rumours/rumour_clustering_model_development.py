@@ -23,6 +23,7 @@ import cci_cameroon
 from langdetect import detect, detect_langs
 from googletrans import Translator
 from cdlib import evaluation
+import logging
 
 # %matplotlib inline
 import faiss
@@ -73,6 +74,9 @@ model_data.shape
 # %%
 # checking the distribution of the codes in the data
 data.groupby("first_code").comment.count().plot(kind="bar")
+plt.savefig(
+    f"{project_directory}/outputs/figures/clustering/distribution_of_three_codes.png"
+)
 
 # %%
 # using the french_semantic model for word embedding
@@ -129,7 +133,7 @@ NG.add_edges_from(edges)
 NG.add_weighted_edges_from(weighted_edges)
 
 # %%
-nx.draw(NG)
+# nx.draw(NG)
 
 # %%
 sentence_embeddings400 = model.encode(data.comment)
@@ -441,6 +445,7 @@ GM400 = nx.from_numpy_matrix(
 
 # %%
 nx.draw(GM400, with_labels=True)
+plt.savefig(f"{project_directory}/outputs/figures/clustering/graph_400.png")
 
 # %%
 # detect communities
@@ -642,6 +647,7 @@ list(
 ax = plt.figure(figsize=(10, 5))
 to_use2.category_id[coms22.communities[0]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
+plt.savefig(f"{project_directory}/outputs/figures/code_distribution.png")
 
 # %%
 list(to_use2.comment.iloc[coms22.communities[1]])
@@ -811,85 +817,17 @@ draw_communities_graph(
 )
 
 # %%
+# comments of the various communities can be inspected as in this example by changing the index
 list(model_data.iloc[coms_f.communities[0]].comment)
 
 # %%
+# view comments distribution in a group according to ground truth from labelling exercise
 ax = plt.figure(figsize=(10, 5))
 model_data.category_id[coms_f.communities[0]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
 
 # %%
 list(model_data.iloc[coms_f.communities[1]].comment)
-
-# %%
-list(model_data.iloc[coms_f.communities[2]].comment)
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[2]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
-
-# %%
-list(model_data.iloc[coms_f.communities[3]].comment)
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[3]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
-
-# %%
-list(model_data.iloc[coms_f.communities[4]].comment)
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[4]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
-
-# %%
-list(model_data.iloc[coms_f.communities[5]].comment)
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[5]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
-
-# %%
-list(model_data.iloc[coms_f.communities[6]].comment)
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[6]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
-
-# %%
-list(model_data.iloc[coms_f.communities[7]].comment)
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[7]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
-
-# %%
-list(model_data.iloc[coms_f.communities[8]].comment)
-
-# %%
-list(model_data.iloc[coms_f.communities[0]].comment)
-
-# %%
-list(model_data.iloc[coms_f.communities[1]].comment)
-
-# %%
-list(model_data.iloc[coms_f.communities[11]].comment)
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[11]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
-
-# %%
-ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[12]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
 
 # %% [markdown]
 # ## General observations

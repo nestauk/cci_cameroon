@@ -10,6 +10,9 @@ filelock
 typer
 sh
 cdlib
+tensorflow
+pytorch
+sentencepiece
 faiss-cpu
 googletrans
 networkx
