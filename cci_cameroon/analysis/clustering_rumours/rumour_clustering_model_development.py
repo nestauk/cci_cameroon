@@ -77,6 +77,7 @@ data.groupby("first_code").comment.count().plot(kind="bar")
 plt.savefig(
     f"{project_directory}/outputs/figures/clustering/distribution_of_three_codes.png"
 )
+plt.close()  # comment this out to see the proportions
 
 # %%
 # using the french_semantic model for word embedding
@@ -382,7 +383,7 @@ labels = nx.get_edge_attributes(GM, "weight")
 nx.draw_networkx_edge_labels(GM, pos=layout, edge_labels=labels)
 
 # Show plot
-plt.show()
+plt.close()  # comment this out to see the proportions
 
 # %%
 # applying a community algorithm to the graph to identify subgroups
@@ -648,6 +649,7 @@ ax = plt.figure(figsize=(10, 5))
 to_use2.category_id[coms22.communities[0]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
 plt.savefig(f"{project_directory}/outputs/figures/code_distribution.png")
+plt.close()  # comment this out to see the proportions
 
 # %%
 list(to_use2.comment.iloc[coms22.communities[1]])
@@ -661,6 +663,7 @@ list(
 ax = plt.figure(figsize=(10, 5))
 to_use2.category_id[coms22.communities[1]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
+plt.close()  # comment this out to see the proportions
 
 # %%
 list(to_use2.comment.iloc[coms22.communities[2]])  # Belief that the disease exists
@@ -672,6 +675,7 @@ list(to_use2.category_id[coms22.communities[2]])
 ax = plt.figure(figsize=(10, 5))
 to_use2.category_id[coms22.communities[2]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
+plt.close()  # comment this out to see the proportions
 
 # %%
 # evaluating connectivity of the communities formed  using modularity
@@ -705,11 +709,14 @@ distance_matric, position = indp.search(
 # %%
 # inspect the distribution of the silhouette scores to pick a cutoff for creating edges between nodes in a graph
 ax = plt.figure(figsize=(10, 5))
-plt.hist(list(matplotlib.cbook.flatten(distance_matric)))
+plt.hist(list(matplotlib.cbook.flatten(distance_matric)), color="green")
 plt.xlabel("Similarity score")
 plt.ylabel("frequency")
 plt.title("Distribution of similarity score for 1300 comments")
-plt.show()
+plt.savefig(
+    f"{project_directory}/outputs/figures/clustering/silhouette_scores_distribution.png"
+)
+plt.close()  # comment this out to see the proportions
 
 # %% [markdown]
 # To generate weighted graph (weights being similarity scores), we Settled at 0.4 as threshold for an edge to be formed. Using this value as cutoff leads to the creation of clusters that are at least 80% homogeneous. A larger value considered leads to many clusters being formed with only one comment.
@@ -724,6 +731,7 @@ GG = nx.from_numpy_matrix(AA, create_using=nx.Graph())
 print(GG)
 # visualize the graph
 nx.draw(GG, with_labels=False)
+plt.close()  # comment this out to see the proportions
 
 # %%
 # using leiden community detection algorithm on the dataset
@@ -743,8 +751,9 @@ list(data.iloc[comss.communities[0]].comment)
 
 # %%
 ax = plt.figure(figsize=(10, 5))
-data.category_id[comss.communities[7]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
+data.category_id[comss.communities[7]].value_counts().plot(kind="bar")
+plt.close()  # comment this out to see the proportions
 
 # %%
 list(data.iloc[comss.communities[1]].comment)  # belief that disease exists
@@ -753,6 +762,7 @@ list(data.iloc[comss.communities[1]].comment)  # belief that disease exists
 ax = plt.figure(figsize=(10, 5))
 data.category_id[comss.communities[1]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
+plt.close()  # comment this out to see the proportions
 
 # %%
 list(data.iloc[comss.communities[2]].comment)  # belief about wearing face masks
@@ -761,6 +771,7 @@ list(data.iloc[comss.communities[2]].comment)  # belief about wearing face masks
 ax = plt.figure(figsize=(10, 5))
 data.category_id[comss.communities[2]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
+plt.close()  # comment this out to see the proportions
 
 # %%
 list(data.iloc[comss.communities[5]].comment)
@@ -769,6 +780,7 @@ list(data.iloc[comss.communities[5]].comment)
 ax = plt.figure(figsize=(10, 5))
 data.category_id[comss.communities[5]].value_counts().plot(kind="bar")
 plt.title("Distribution of comments based on ground truth")
+plt.close()
 
 # %%
 # evaluating the model using modularity
@@ -804,12 +816,13 @@ G_f = nx.from_numpy_matrix(A_f, create_using=nx.Graph())
 print(G_f)
 # visualize the graph
 nx.draw(G_f, with_labels=False)
+plt.close()  # comment this line out to see the graph produced.
 
 # %%
 coms_f = algorithms.leiden(G_f)
 
 # %%
-len(coms_f.communities)
+logging.info(len(coms_f.communities))
 
 # %%
 draw_communities_graph(
@@ -818,13 +831,16 @@ draw_communities_graph(
 
 # %%
 # comments of the various communities can be inspected as in this example by changing the index
-list(model_data.iloc[coms_f.communities[0]].comment)
+logging.info(list(model_data.iloc[coms_f.communities[0]].comment))
 
 # %%
 # view comments distribution in a group according to ground truth from labelling exercise
 ax = plt.figure(figsize=(10, 5))
-model_data.category_id[coms_f.communities[0]].value_counts().plot(kind="bar")
-plt.title("Distribution of comments based on ground truth")
+model_data.category_id[coms_f.communities[0]].value_counts().plot(
+    kind="bar"
+).figure.savefig("plot.png")
+# plt.title("Distribution of comments based on ground truth")
+plt.close()
 
 # %%
 list(model_data.iloc[coms_f.communities[1]].comment)

@@ -9,13 +9,14 @@ tqdm
 filelock
 typer
 sh
-cdlib
-tensorflow
-pytorch
-sentencepiece
-faiss-cpu
+cdlib ==0.2.5
+tensorflow ==2.7.0
+pytorch==1.9.0
+sentencepiece==0.1.96
+faiss-cpu==1.7.1.post2
 googletrans
-networkx
-sentence-transformers
-xlsxwriter
-langdetect
+networkx ==2.6.3
+sentence-transformers ==2.0.0
+xlsxwriter==3.0.3
+langdetect ==1.0.9
+openpyxl==3.0.9
