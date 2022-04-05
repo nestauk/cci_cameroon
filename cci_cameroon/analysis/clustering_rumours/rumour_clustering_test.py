@@ -107,7 +107,3 @@ with xlsxwriter.Workbook(f"{project_directory}/inputs/data/clusters.xlsx") as wo
             j = i + 1
             ex_col = "A" + str(j)
             worksheet.write(ex_col, community[i])
-    # for row_num, data in enumerate(new_list):
-    #    worksheet.write_row(row_num, 0, data)
-
-# %%
