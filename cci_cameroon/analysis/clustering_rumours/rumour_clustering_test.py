@@ -54,6 +54,8 @@ model_data = pd.read_excel(f"{project_directory}/inputs/data/model_data.xlsx")
 column_name = "comment"  # holds the column of interest in the data
 
 # %%
+
+# %%
 # initialize the french_semantic model for word embedding
 model = SentenceTransformer("Sahajtomar/french_semantic")
 
@@ -67,7 +69,7 @@ indp2 = faiss.index_factory(
 )
 faiss.normalize_L2(sentence_embeddings)  # to be used for inner product computation
 # setting the number of neighbors to consider for graph connectivity
-neighbors2 = 7
+neighbors2 = 5
 indp2.train(sentence_embeddings)
 indp2.add(sentence_embeddings)
 similarity_distance, sim_positions = indp2.search(
@@ -93,7 +95,7 @@ retained_communities, rejected_communities, statistics = get_communities_with_th
 
 
 # %%
-retained_communities[1]
+retained_communities
 
 # %%
 rejected_communities
@@ -107,3 +109,5 @@ with xlsxwriter.Workbook(f"{project_directory}/inputs/data/clusters.xlsx") as wo
             j = i + 1
             ex_col = "A" + str(j)
             worksheet.write(ex_col, community[i])
+
+# %%

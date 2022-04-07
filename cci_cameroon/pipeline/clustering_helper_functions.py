@@ -102,7 +102,7 @@ def generate_adjacency_matrix2(positions, n_neighbors, dimension, weights):
     for row in range(dimension):
         for num in range(n_neighbors):
             # set the neighbors in the adjacency matrix only if the similarity score is positive
-            if weights[row][num] > 0.4:
+            if weights[row][num] >= 0.3:
                 adjacency_matrix[row, positions[row][num]] = weights[row][num]
     np.fill_diagonal(adjacency_matrix, 0)  # takes off self-connections
     return adjacency_matrix
@@ -249,5 +249,7 @@ def get_metrics(data, column_name, transformer_model):
     )
     return retained_clusters_list, some_rejected_clusters_list, df_stats
 
+
+# %%
 
 # %%
