@@ -20,3 +20,8 @@ sentence-transformers ==2.0.0
 xlsxwriter==3.0.3
 langdetect ==1.0.9
 openpyxl==3.0.9
+sentence_transformers
+sklearn
+stop_words
+langdetect
+googletrans
