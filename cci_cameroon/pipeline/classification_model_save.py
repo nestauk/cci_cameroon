@@ -18,32 +18,28 @@
 # %% [markdown]
 # ## Classifcation model save
 
+# %% [markdown]
+# This script refits the best performing model type and parameters found in the 'classification_model_development' script on the training set and saves the model to disk. This model is then used in the 'model run' folder to run the model on new data (the test set by default).
+#
+# As well as the training set comprrised of rumours assigned to the eight codes the model is trying to predict, a 'no response' dataset* is also included in the model training. This uses a random set of rumours that don't belong to the eight codes that are assigned as 'no response' (all zeros in the multi-label array). The reason for using this is so the model can be better trained to predict cases that aren't assigned to any of the eight codes.
+#
+# *See the 'data_splitting' file in the pipeline folder for the creation of this dataset.
+
 # %%
 # Read in libraries
-from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
 from sklearn.utils import shuffle
 from sentence_transformers import SentenceTransformer
 from sklearn.preprocessing import MultiLabelBinarizer
 import os
-from sklearn.metrics import multilabel_confusion_matrix
 from ast import literal_eval
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.svm import SVC
-from nltk.corpus import stopwords
-from sklearn.metrics import f1_score
-import matplotlib.pyplot as plt
 import pickle
 
 # Project modules
 import cci_cameroon
-from cci_cameroon.pipeline import process_workshop_data as pwd
-from cci_cameroon.pipeline import model_tuning_report as mtr
+from cci_cameroon import config
 
 # %%
 # Set directory
@@ -53,7 +49,10 @@ project_directory = cci_cameroon.PROJECT_DIR
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # %%
-stop = stopwords.words("french")
+# Get parameters from config file
+knn_nn = config["knn_model_params"]["nearest_neighbours"]
+knn_p = config["knn_model_params"]["p"]
+knn_weights = config["knn_model_params"]["weights"]
 
 # %%
 # Read train/test data
@@ -63,8 +62,9 @@ X_train = pd.read_excel(
 y_train = pd.read_excel(
     f"{project_directory}/inputs/data/data_for_modelling/y_train.xlsx", index_col="id"
 )["category_id"]
+# Transform y_train to be readable by binarizer
+y_train = y_train.apply(literal_eval)
 
-# %%
 # Data to use to train 'no response'
 no_response_train = pd.read_excel(
     f"{project_directory}/inputs/data/data_for_modelling/no_response_train.xlsx",
@@ -72,24 +72,17 @@ no_response_train = pd.read_excel(
 )["comment"]
 
 # %%
-# No reponse - all zeros
-y_nr_train = np.array([[0] * 8] * 120)
-
-# %%
-y_train = y_train.apply(literal_eval)
-
-# %%
 # Transform Y into multilabel format
 mlb = MultiLabelBinarizer()
 y_train = mlb.fit_transform(y_train)
+# No reponse - all zeros array
+y_nr_train = np.array([[0] * 8] * 120)
 
-# %%
+# Combine training sets with no response training sets
 y_train = np.concatenate((y_train, y_nr_train))
-
-# %%
 X_train = X_train.append(no_response_train, ignore_index=False)
 
-# %%
+# Shuffle data
 X_train, y_train = shuffle(X_train, y_train, random_state=1)
 
 # %%
@@ -99,11 +92,14 @@ model_fr = SentenceTransformer("Sahajtomar/french_semantic")  # French language 
 X_train_embeddings_fr = model_fr.encode(list(X_train))
 
 # %%
-# Fit best performing model
-knn = KNeighborsClassifier(n_neighbors=5, p=1, weights="distance")
+# Fit best performing model (KNN)
+knn = KNeighborsClassifier(n_neighbors=knn_nn, p=knn_p, weights=knn_weights)
 knn.fit(X_train_embeddings_fr, y_train)
 
 # %%
-# save the best model to disk
+# save model and binarizer to disk
+with open(f"{project_directory}/outputs/models/mlb.pkl", "wb") as f:
+    pickle.dump((mlb), f)
+
 filename = f"{project_directory}/outputs/models/final_classification_model.sav"
 pickle.dump(knn, open(filename, "wb"))

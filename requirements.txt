@@ -25,3 +25,6 @@ sklearn
 stop_words
 langdetect
 googletrans
+pickle
+os
+textwrap

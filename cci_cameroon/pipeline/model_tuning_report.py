@@ -24,6 +24,7 @@ from collections import Counter
 from itertools import chain
 from textwrap import wrap
 import pandas as pd
+import os
 
 # %%
 # Set directory
@@ -138,3 +139,53 @@ def add_y_class(y_set):
         y_set_update.append(list(item))
     y_set_update = np.asarray(y_set_update)
     return y_set_update
+
+
+# %%
+def create_pred_dfs(y_pred_knn, codes, X_test):
+    """
+    Create dfs for predicted classes and unclassified comments from predicted rumours run on the model.
+    """
+    # Add 'no prediction as a class'
+    # y_test = add_y_class(y_test)
+    y_pred_knn = add_y_class(y_pred_knn)
+    code_cols = [word.replace("_", " ") for word in codes]
+    code_cols.append("Not classified")
+    # Create dfs for all predictions and 'no class predictions'
+    predictions = pd.DataFrame(y_pred_knn, columns=code_cols)
+    predictions["comment"] = X_test.reset_index(drop=True)
+    predictions["id"] = X_test.reset_index()["id"]
+    not_classified = predictions[predictions["Not classified"] == 1][["id", "comment"]]
+    return predictions, not_classified
+
+
+# %%
+def save_predictions(pred_file, predictions, no_class_file, not_classified):
+    """
+    Function to save prediction outputs from classification model.
+    Checks is files exist, if they do append data (removing duplicates). Otherwise save data to new file.
+    """
+    if os.path.isfile(pred_file):
+        predict_df = pd.read_excel(pred_file)
+        predict_update = (
+            pd.concat([predict_df, predictions])
+            .drop_duplicates()
+            .reset_index(drop=True)
+        )
+        predict_update.to_excel(pred_file, index=False)
+    else:
+        predictions.to_excel(pred_file, index=False)
+
+    if os.path.isfile(no_class_file):
+        not_class_df = pd.read_excel(no_class_file)
+        no_class_update = (
+            pd.concat([not_class_df, not_classified])
+            .drop_duplicates()
+            .reset_index(drop=True)
+        )
+        no_class_update.to_excel(no_class_file, index=False)
+    else:
+        not_classified.to_excel(no_class_file, index=False)
+
+
+# %%
