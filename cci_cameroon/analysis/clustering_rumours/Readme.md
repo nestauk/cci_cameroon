@@ -8,19 +8,9 @@ This document summarises the approach used to prototype a tool that forms cluste
 
 In the sections that follow, we describe the source of data and how the comments were processed. Attention is then focused on using Natural Language Processing NLP techniques to prepare and cluster the data. Figure 1 shows the key stages of the process.
 
-![Image not found](f"{project_dir}/outputs/figures/clustering/clustering_overall.png")
+![Image not found](clustering_overall.png)
 
 <!-- #endregion -->
-
-```python
-import cci_cameroon
-from IPython.display import Image
-project_dir = cci_cameroon.PROJECT_DIR
-```
-
-```python
-Image(f"{project_dir}/outputs/figures/clustering/clustering_overall.png")
-```
 
 <!-- #region -->
 
