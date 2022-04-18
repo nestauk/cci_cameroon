@@ -1,3 +1,5 @@
+<!-- #region -->
+
 # Running the models
 
 <br>
@@ -13,6 +15,14 @@ To run the models you will first need to setup the project. Follow the below two
 
 To note the project is setup using the Nesta Cookiecutter (guidelines on the Nesta Cookiecutter [can be found here](https://nestauk.github.io/ds-cookiecutter/structure/)).
 
+#### Pre-trained models (classification)
+
+The pre-trained classification model is saved to outputs/model. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called 'classification_model_save\*.'
+
+The MultiLabelBinarizer model is used to access the classes to create the predictions dataset. This model is also created and saved to outputs by running classification_model_save.'
+
+\*This script relies on the training set being saved in outputs/data/data_for_modelling. See the main readme page for more information.
+
 #### Input needed
 
 After you setup the project you will need your test dataset. To build our models we used the dataset provided to us by the IFRC and Cameroon Red Cross containing rumours, beliefs and observations from community members (more information on the data source can be found on the [IFRC.Go website](https://go.ifrc.org/emergencies/4583#community-data)). To run the scripts the data needs to be in the following format:
@@ -23,6 +33,8 @@ After you setup the project you will need your test dataset. To build our models
 | id      | comment     |
 | ------- | ----------- |
 | numeric | rumour text |
+
+The reason for having an ID column is so you can reference back the prediction files to the original test dataset (if needed for reporting results).
 
 ### Run the models
 
@@ -44,3 +56,5 @@ The first two are created from the classification_model_run file and the third i
 The 'not_classified' file is used as input to run the clustering algorthm in the 'clustering_model_run' file in the same folder.
 
 The 'clusters' file contains the unclassified comments broken into the clusters chosen by the clustering model. Each cluster in saved as a seperate sheet in an excel file.
+
+<!-- #endregion -->
