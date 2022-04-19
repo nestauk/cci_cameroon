@@ -7,11 +7,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: cci_cameroon
+#     display_name: Python 3 (ipykernel)
 #     language: python
-#     name: cci_cameroon
+#     name: python3
 # ---
 
 # %%
@@ -50,10 +50,8 @@ project_directory = cci_cameroon.PROJECT_DIR
 
 # %%
 # load unclassified comments comming in from the classification model
-model_data = pd.read_excel(f"{project_directory}/inputs/data/model_data.xlsx")
+model_data = pd.read_excel(f"{project_directory}/outputs/data/not_classified.xlsx")
 column_name = "comment"  # holds the column of interest in the data
-
-# %%
 
 # %%
 # initialize the french_semantic model for word embedding
@@ -102,7 +100,7 @@ rejected_communities
 
 # %%
 # create a workbook and store the resulting clusters in it. Each cluster in a separate worksheet.
-with xlsxwriter.Workbook(f"{project_directory}/inputs/data/clusters.xlsx") as workbook:
+with xlsxwriter.Workbook(f"{project_directory}/outputs/data/clusters.xlsx") as workbook:
     for community in retained_communities:
         worksheet = workbook.add_worksheet()
         for i in range(len(community)):
