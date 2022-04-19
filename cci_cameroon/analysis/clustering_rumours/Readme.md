@@ -1,5 +1,3 @@
-<!-- #region -->
-
 # Clustering algorithm
 
 ## Introduction
@@ -9,10 +7,6 @@ This document summarises the approach used to prototype a tool that forms cluste
 In the sections that follow, we describe the source of data and how the comments were processed. Attention is then focused on using Natural Language Processing NLP techniques to prepare and cluster the data. Figure 1 shows the key stages of the process.
 
 ![Image not found](clustering_overall.png)
-
-<!-- #endregion -->
-
-<!-- #region -->
 
 Figure 1: Key stages of the process
 
@@ -78,8 +72,6 @@ Once run, the model takes in a dataset and performs the following:
 ## Final output
 
 The final output of the model are the created clusters. These are saved in excel file clusters.xslx under the outputs/data directory. Each cluster is saved in a different worksheet for later inspection by a personel.
-
-<!-- #endregion -->
 
 ```python
 
