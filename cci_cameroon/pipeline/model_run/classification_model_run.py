@@ -52,12 +52,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # %%
 # File paths for saving
-pred_file = (
-    f"{project_directory}/outputs/data/classification_predictions/all_predictions.xlsx"
-)
-no_class_file = (
-    f"{project_directory}/outputs/data/classification_predictions/not_classified.xlsx"
-)
+pred_file = f"{project_directory}/outputs/data/all_predictions.xlsx"
+no_class_file = f"{project_directory}/outputs/data/not_classified.xlsx"
 
 # %%
 # Read test data
