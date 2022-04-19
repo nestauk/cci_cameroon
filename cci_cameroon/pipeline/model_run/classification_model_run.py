@@ -96,8 +96,10 @@ knn_model = pickle.load(
 y_pred_knn = knn_model.predict(X_test_embeddings_fr)
 
 # %%
-# predictions and not_classified dataframes created
 codes = list(mlb.classes_)  # Codes list
+
+# %%
+# predictions and not_classified dataframes created
 predictions, not_classified = mtr.create_pred_dfs(y_pred_knn, codes, X_test)
 
 # %%
