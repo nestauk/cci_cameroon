@@ -147,6 +147,7 @@ def create_pred_dfs(y_pred_knn, codes, X_test):
     Create dfs for predicted classes and unclassified comments from predicted rumours run on the model.
     """
     # Add 'no prediction as a class'
+    # y_test = add_y_class(y_test)
     y_pred_knn = add_y_class(y_pred_knn)
     code_cols = [word.replace("_", " ") for word in codes]
     code_cols.append("Not classified")
