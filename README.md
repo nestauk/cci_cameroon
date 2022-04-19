@@ -8,6 +8,8 @@ The outbreak of COVID-19 witnessed an avalanche of disinformation/rumours as peo
 
 The Collective Crisis Intelligence project on Cameroon aims at developing a prototype of an Artificial Intelligence system that can be used to classify comments in the context of covid-19. This would help a volunteer in the field by providing appropriate and timely responses to community members' comments. Figure 1 summarises the use of the tool.
 
+![test1](outputs/figures/overall_system.png)
+
 Once a worker on the field encounters a comment which he/she has not heard before, they quickly capture this and send to the tool by SMS. The tool tries to classify the comment into one of the existing labels. If a match is found, an appropriate response to the comment is returned by the system which the user transmits to the community member. Where a match is not found, the comment is sent to a pool that would be clustered. The resulting clusters are sent to a staff to assign labels and appropriate responses to them.
 
 ![Figure 1](tool_works.png)
