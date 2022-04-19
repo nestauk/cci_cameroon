@@ -8,11 +8,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.13.2
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: cci_cameroon
 #     language: python
-#     name: python3
+#     name: cci_cameroon
 # ---
 
 # %% [markdown]
@@ -52,12 +52,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # %%
 # File paths for saving
-pred_file = (
-    f"{project_directory}/outputs/data/classification_predictions/all_predictions.xlsx"
-)
-no_class_file = (
-    f"{project_directory}/outputs/data/classification_predictions/not_classified.xlsx"
-)
+pred_file = f"{project_directory}/outputs/data/all_predictions.xlsx"
+no_class_file = f"{project_directory}/outputs/data/not_classified.xlsx"
 
 # %%
 # Read test data
@@ -103,5 +99,3 @@ predictions, not_classified = mtr.create_pred_dfs(y_pred_knn, codes, X_test)
 # %%
 # Checks is files exist, if they do append data (removing duplicates). Otherwise save data to new file.
 mtr.save_predictions(pred_file, predictions, no_class_file, not_classified)
-
-# %%

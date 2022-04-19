@@ -186,6 +186,3 @@ def save_predictions(pred_file, predictions, no_class_file, not_classified):
         no_class_update.to_excel(no_class_file, index=False)
     else:
         not_classified.to_excel(no_class_file, index=False)
-
-
-# %%
