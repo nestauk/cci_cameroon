@@ -11,11 +11,11 @@
   - [The classification model](#the-classification-model)
   - [The clustering model](#the-clustering-model)
 - [Running the models](#running-the-models)
-- [Steps to take before running the model](#steps-to-take-before-running-the-model)
-- [Pre-trained models (classification)](<#pre-trained-models-(classification)>)
-- [Input needed](#input-needed)
-- [Run the models](#run-the-model)
-- [Outputs](#outputs)
+  - [Steps to take before running the model](#steps-to-take-before-running-the-model)
+  - [Pre-trained models (classification)](<#pre-trained-models-(classification)>)
+  - [Input needed](#input-needed)
+  - [Run the models](#run-the-model)
+  - [Outputs](#outputs)
 
 # Background
 
@@ -63,7 +63,7 @@ The clustering model development is performed in a file named [clustering_model_
 
 The final scripts for the classification (classification_model_run.py) and clustering(clustering_model_run.py) models and are found in [pipeline directory](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/pipeline/model_run) in a folder called model_run. The scripts use the held out test dataset to first classify the rumours and then cluster the rumours that cannot be classified. Both scripts can be run separately and can use any new rumour datasets that are in the correct format (contain a comment field for predicting and clustering).
 
-# Steps to take before running
+## Steps to take before running
 
 To run the models you will first need to setup the project by following the steps below:
 
@@ -72,13 +72,13 @@ To run the models you will first need to setup the project by following the step
 3. Inside the project directory run `make inputs-pull` to access the data from S3 (for those with access to the Nesta S3 account)
    To note the project is setup using the Nesta Cookiecutter (guidelines on the Nesta Cookiecutter [can be found here](https://nestauk.github.io/ds-cookiecutter/structure/)).
 
-# Pre-trained models (classification)
+## Pre-trained models (classification)
 
 The pre-trained classification model is saved to outputs/model. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called `classification_model_save.py`
 
 The MultiLabelBinarizer model is used to access the classes to create the predictions dataset. This model is also created and saved to outputs by running classification_model_save.py.
 
-# Input needed
+## Input needed
 
 After you setup the project you will need your test dataset. To build our models we used the dataset provided to us by the IFRC and Cameroon Red Cross containing rumours, beliefs and observations from community members (more information on the data source can be found on the IFRC.Go website). To run the scripts the data needs to be in the following format:
 
@@ -88,7 +88,7 @@ id comment
 numeric rumour text
 The reason for having an ID column is so you can reference back the prediction files to the original test dataset (if needed for reporting results).
 
-# Run the models
+## Run the models
 
 Perform the following steps to run the models:
 
@@ -96,7 +96,7 @@ Perform the following steps to run the models:
 2. run `python3 classification_model_run.py`
 3. run `python3 clustering_model_run.py`
 
-# Outputs
+## Outputs
 
 There are three files created from running the models and saved to outputs:
 
