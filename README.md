@@ -16,6 +16,7 @@
   - [Input needed](#input-needed)
   - [Run the models](#run-the-model)
   - [Outputs](#outputs)
+- [Using the tool](#using-the-tool)
 
 # Background
 
