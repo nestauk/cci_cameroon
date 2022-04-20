@@ -9,15 +9,17 @@
   - [The classification model](#the-classification-model)
   - [The clustering model](#the-clustering-model)
 - [Running the models](#running-the-models)
-- [Steps to take before running the model](#steps-to-take-before-running-the-model)
-- [Pre-trained models (classification)](<#pre-trained-models-(classification)>)
-- [Input needed](#input-needed)
-- [Run the models](#run-the-model)
-- [Outputs](#outputs)
+  - [Steps to take before running the model](#steps-to-take-before-running-the-model)
+  - [Pre-trained models (classification)](<#pre-trained-models-(classification)>)
+  - [Input needed](#input-needed)
+  - [Run the models](#run-the-model)
+  - [Outputs](#outputs)
+- [Using the tool](#using-the-tool)
 
 # Background
 
 The outbreak of COVID-19 witnessed an avalanche of rumours and misinformation as people around the world grappled with the disease. The Cameroon Red Cross (CRC) needed a way to both identify and address the rumours and misinformation that was arising on covid-19. With the help of the International Federation of the Red Cross (IFRC), the CRC have been collecting feedback from communities on covid-19 including rumours, beliefs and observations. So far the approach of collecting, coding and acting on these rumours has been manual, where members of the IFRC assign new rumours to codes and the CRC address new rumours with an appropriate response through different channels.
+
 This project explores ways to use supervised and unsupervised machine learning methods to both classify rumours to existing codes and suggest new rumour groups for the CRC to address.
 
 # Overview of the prototype
@@ -54,9 +56,9 @@ The clustering model development is performed in a file named [clustering_model_
 
 # Running the models
 
-The final scripts for the classification (classification_model_run.py) and clustering(clustering_model_run.py) models and are found in [pipeline directory](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/pipeline/model_run) in a folder called model_run. The scripts use the held out test dataset to first classify the rumours and then cluster the rumours that cannot be classified. Both scripts can be run separately and can use any new rumour datasets that are in the correct format (contain a comment field for predicting and clustering).
+The final scripts for the classification (`classification_model_run.py`) and clustering (`clustering_model_run.py`) models and are found in [pipeline directory](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/pipeline/model_run) in a folder called `model_run`. The scripts use the held out test dataset to first classify the rumours and then cluster the rumours that cannot be classified. Both scripts can be run separately and can use any new rumour datasets that are in the correct format (contain a comment field for predicting and clustering).
 
-# Steps to take before running
+## Steps to take before running
 
 To run the models you will first need to setup the project by following the steps below:
 
@@ -65,23 +67,23 @@ To run the models you will first need to setup the project by following the step
 3. Inside the project directory run `make inputs-pull` to access the data from S3 (for those with access to the Nesta S3 account)
    To note the project is setup using the Nesta Cookiecutter (guidelines on the Nesta Cookiecutter [can be found here](https://nestauk.github.io/ds-cookiecutter/structure/)).
 
-# Pre-trained models (classification)
+## Pre-trained models (classification)
 
-The pre-trained classification model is saved to outputs/model. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called `classification_model_save.py`
+The pre-trained classification model is saved to `outputs/model`. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called `classification_model_save.py`
 
-The MultiLabelBinarizer model is used to access the classes to create the predictions dataset. This model is also created and saved to outputs by running classification_model_save.py.
+The MultiLabelBinarizer model is used to access the classes to create the predictions dataset. This model is also created and saved to outputs by running `classification_model_save.py`.
 
-# Input needed
+## Input needed
 
 After you setup the project you will need your test dataset. To build our models we used the dataset provided to us by the IFRC and Cameroon Red Cross containing rumours, beliefs and observations from community members (more information on the data source can be found on the IFRC.Go website). To run the scripts the data needs to be in the following format:
 
-Filename: X_test.xlsx
-Saved in inputs/data/data_for_modelling/
+Filename: `X_test.xlsx`
+Saved in `inputs/data/data_for_modelling/`
 id comment
 numeric rumour text
 The reason for having an ID column is so you can reference back the prediction files to the original test dataset (if needed for reporting results).
 
-# Run the models
+## Run the models
 
 Perform the following steps to run the models:
 
@@ -89,7 +91,7 @@ Perform the following steps to run the models:
 2. run `python3 classification_model_run.py`
 3. run `python3 clustering_model_run.py`
 
-# Outputs
+## Outputs
 
 There are three files created from running the models and saved to outputs:
 
@@ -99,9 +101,9 @@ There are three files created from running the models and saved to outputs:
 
 The first two are created from the `classification_model_run.py` file and the third is created from `clustering_model_run.py` file. If a rumour is classified by the model to one or more of the eight codes it is saved in the `all_predictions.xlsx` file. If the rumour cannot be classfied it is saved into the the `not_classified.xlsx` file. Both files also save the rumours ID assigned so it can be referenced back to the test set for reporting.
 
-The not_classified.xlsx file is used as input to run the clustering algorthm in the clustering_model_run.py file in the same folder.
+The `not_classified.xlsx` file is used as input to run the clustering algorthm in the clustering_model_run.py file in the same folder.
 
-The clusters.xlsx file contains the unclassified comments broken into the clusters chosen by the clustering model. Each cluster in saved as a seperate sheet in the excel file.
+The `clusters.xlsx` file contains the unclassified comments broken into the clusters chosen by the clustering model. Each cluster in saved as a seperate sheet in the excel file.
 
 # Using the tool
 
