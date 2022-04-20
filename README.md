@@ -1,5 +1,3 @@
-<!-- #region -->
-
 # Collective Crisis Intelligence Project for The Cameroon Red Cross
 
 # Contents
@@ -30,10 +28,6 @@ The prototype tool handles new rumours in two steps. First it tries to classify 
 
 Figure 1: System Components
 
-<!-- #endregion -->
-
-<!-- #region -->
-
 # Model workflow
 
 ## Data preprocessing
@@ -57,7 +51,6 @@ The clustering model development is performed in a file named [clustering_model_
 - For each data point, using cosine similarity,the top 5 most similar data points are fetched from the dataset using FAISS flat index. The output of this step is a matrix where each entry is the cosine similarity score between two data points.
 - Using the cosine similarity score matrix, a graph network is constructed where the nodes are the individual data points. An edge occurs between two nodes A and B if node B is among the top 5 most similar nodes to A.
 - The resulting network is fed into a community detection algorithm. This produces clusters of comments as output.
-<!-- #endregion -->
 
 # Running the models
 
