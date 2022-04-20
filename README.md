@@ -14,7 +14,7 @@ This project explores ways to use supervised and unsupervised machine learning m
 
 The prototype tool handles new rumours in two steps. First it tries to classify them to one of the existing eight codes using a predictive model. If the rumour does not fit one of these codes it is added to a pool of unmatched data points to be clustered into different groups. Figure 1 summarises the major steps of the prototype.
 
-![Figure 1](outputs/figures/overall_system.png)
+![Figure 1](outputs/figures/readme/overall_system.png)
 
 Figure 1: System Components
 
@@ -101,5 +101,5 @@ The Collective Crisis Intelligence project for the Cameroon Red Cross aims at de
 Once a worker on the field encounters a comment which he/she has not heard before, they quickly capture this and send to the tool by SMS. The tool tries to classify the comment into one of the existing labels. If a match is found, an appropriate response to the comment is returned by the system which the user transmits to the community member.
 Where a match is not found, the comment is sent to a pool that would be clustered. The resulting clusters are sent to a staff to assign labels and appropriate responses to them.
 
-![How the tool is used](outputs/figures/tool_works.png)
+![How the tool is used](outputs/figures/readme/tool_works.png)
 Figure 2: How the tool is used
