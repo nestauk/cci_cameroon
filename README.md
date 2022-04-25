@@ -89,7 +89,9 @@ Perform the following steps to run the models:
 
 1. cd into `pipeline/model_run`
 2. run `python3 classification_model_run.py`
-3. run `python3 clustering_model_run.py`
+3. run `python3 clustering_model_run.py`\*
+
+\*We have found that running this file on a mac system can sometimes encounter errors. If you experience this you can run a version of this file on google colab. The version that can be run on google colab can be found in`analysis/model_development` called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run).
 
 ### Outputs
 

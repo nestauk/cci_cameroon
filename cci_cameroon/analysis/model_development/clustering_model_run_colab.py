@@ -14,11 +14,32 @@
 #     name: cci_cameroon
 # ---
 
+# %% [markdown]
+# ## Clustering model run (Google colab version)
+#
+# Use this notebook to run the clustering_model_run notebook on google colab.
+#
+# Steps to take to run:
+#
+# 1. Upload this notebook to Google Colab
+# 2. Upload the following files to google drive (press the upload icon in the 'Files' section to the left of the notebook. The first is found in the `cci_cameroon/pipeline` section of the repository and contains functions needed to run the code. The second is the dataset of unclassified rumours created by running `classification_model_run.py`.
+#   - `clustering_helper_function.py`
+#   - `not_classfied.xlsx`
+# 3. Uncomment the `pip install` lines in the first cell
+#
+# The output of this script is the `clusters.xlsx` file which contains the clusters of rumours created by the algorthm.
+
+# %%
+# #!pip install cdlib
+# #!pip install faiss-cpu --no-cache
+# #!pip install sentence-transformers
+# #!pip install xlsxwriter
+# #!pip install leidenalg
+
 # %%
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import cci_cameroon
 from cdlib import evaluation
 
 # %matplotlib inline
@@ -28,7 +49,7 @@ from sentence_transformers import SentenceTransformer
 import networkx as nx
 import cdlib
 from cdlib import algorithms
-from cci_cameroon.pipeline.clustering_helper_functions import (
+from clustering_helper_functions import (
     generate_colors,
     draw_communities_graph,
     generate_adjacency_matrix,
@@ -45,12 +66,8 @@ import community
 import xlsxwriter
 
 # %%
-project_directory = cci_cameroon.PROJECT_DIR
-
-
-# %%
 # load unclassified comments comming in from the classification model
-model_data = pd.read_excel(f"{project_directory}/outputs/data/not_classified.xlsx")
+model_data = pd.read_excel("not_classified.xlsx")
 column_name = "comment"  # holds the column of interest in the data
 
 # %%
@@ -100,12 +117,10 @@ rejected_communities
 
 # %%
 # create a workbook and store the resulting clusters in it. Each cluster in a separate worksheet.
-with xlsxwriter.Workbook(f"{project_directory}/outputs/data/clusters.xlsx") as workbook:
+with xlsxwriter.Workbook("clusters.xlsx") as workbook:
     for community in retained_communities:
         worksheet = workbook.add_worksheet()
         for i in range(len(community)):
             j = i + 1
             ex_col = "A" + str(j)
             worksheet.write(ex_col, community[i])
-
-# %%
