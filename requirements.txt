@@ -24,7 +24,10 @@ sentence_transformers
 sklearn
 stop_words
 langdetect
-googletrans
 pickle
 os
 textwrap
+umap-learn
+cairocffi
+leidenalg
+igraph
