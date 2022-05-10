@@ -76,9 +76,10 @@ project_directory = cci_cameroon.PROJECT_DIR
 
 # %%
 # load cleaned data
-to_use2 = pd.read_excel("to_use2.xlsx")
-model_data = pd.read_excel("model_data.xlsx")
-data = pd.read_excel("data.xlsx")
+# read cleaned data from inputs folder
+to_use2 = pd.read_excel(f"{project_directory}/inputs/data/to_use2.xlsx")
+model_data = pd.read_excel(f"{project_directory}/inputs/data/model_data.xlsx")
+data = pd.read_excel(f"{project_directory}/inputs/data/data.xlsx")
 
 # %%
 model_data.drop("index", axis=1, inplace=True)
@@ -889,6 +890,7 @@ def plot_clusters(df, cluster_column, file_path=None):
 
 # %%
 plot_clusters(model_data, "consensus")
+plt.savefig("clusters.svg")
 
 # %%
 
