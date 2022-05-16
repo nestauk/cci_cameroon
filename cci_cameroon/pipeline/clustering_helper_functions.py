@@ -27,6 +27,8 @@ from cdlib import algorithms
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 from cdlib import evaluation
+from time import time
+import seaborn as sns
 
 
 # %%
@@ -101,9 +103,9 @@ def generate_adjacency_matrix2(positions, n_neighbors, dimension, weights):
     # loop through the positions and set neighbors accordingly.
     for row in range(dimension):
         for num in range(n_neighbors):
-            # set the neighbors in the adjacency matrix only if the similarity score is positive
+            # set the neighbors in the adjacency matrix only if the similarity score is greater than 0.3
             if weights[row][num] >= 0.3:
-                adjacency_matrix[row, positions[row][num]] = weights[row][num]
+                adjacency_matrix[row, positions[row][num]] = 1
     np.fill_diagonal(adjacency_matrix, 0)  # takes off self-connections
     return adjacency_matrix
 
@@ -248,6 +250,36 @@ def get_metrics(data, column_name, transformer_model):
         }
     )
     return retained_clusters_list, some_rejected_clusters_list, df_stats
+
+
+def plot_clusters(df, cluster_column, file_path=None):
+    """Plots a scatter plot of the clusters with each cluster having a different color.
+    Parameters:
+        df: a dataframe which contains a column cluster_column that holds the cluster lables (int). It also contains
+        columns x and y which are extracted from the reduced embeddings of the data.
+        file_path: directory where image should be saved
+    """
+    # generate colors to use for cluster plotting
+    colors = generate_colors(len(df[cluster_column].unique()))
+    sns.set_style("white", {"axes.facecolor": "1"})
+    plt.figure(figsize=(18, 10))
+    for cluster in df[cluster_column].unique():
+        plt.scatter(
+            df[df[cluster_column] == cluster].x,
+            df[df[cluster_column] == cluster].y,
+            alpha=0.9,
+            edgecolors=np.array([255, 255, 255]) / 255,
+            color=colors[cluster],
+        )
+    plt.axis("off")
+    # plt.legend(loc=(1.01,0.4))
+    plt.title(
+        "Clusters formed from community detection algorithm using consensus clustering"
+    )
+    if file_path != None:
+        name = str(time()) + ".png"
+        plt.savefig(f"{file_path}/{name}")
+    plt.show()
 
 
 # %%
