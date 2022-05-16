@@ -24,7 +24,5 @@ sentence_transformers
 sklearn
 stop_words
 langdetect
-googletrans
-pickle
-os
 textwrap
+googletrans==4.0.0-rc1

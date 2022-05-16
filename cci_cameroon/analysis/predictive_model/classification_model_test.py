@@ -150,6 +150,9 @@ f1_nb = f1_score(y_test, y_pred_nb, average="micro")
 f1_scores = [f1_knn, f1_svm, f1_nb, f1_rf, f1_dt]
 
 # %%
+f1_knn
+
+# %%
 plt.bar(["knn", "svm", "naive bayes", "random forest", "decision tree"], f1_scores)
 plt.xticks(rotation=45, ha="right")
 plt.title("Micro F1 scores of models on test set")

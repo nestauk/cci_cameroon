@@ -7,11 +7,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.13.2
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: cci_cameroon
 #     language: python
-#     name: python3
+#     name: cci_cameroon
 # ---
 
 # %%

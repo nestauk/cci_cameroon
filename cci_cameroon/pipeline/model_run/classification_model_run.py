@@ -40,6 +40,7 @@ import os
 from ast import literal_eval
 import pickle
 import os.path
+from pathlib import Path
 
 # Project modules
 import cci_cameroon
@@ -95,6 +96,10 @@ y_pred_knn = knn_model.predict(X_test_embeddings_fr)
 # predictions and not_classified dataframes created
 codes = list(mlb.classes_)  # Codes list
 predictions, not_classified = mtr.create_pred_dfs(y_pred_knn, codes, X_test)
+
+# %%
+# Add folder if not already created
+Path(f"{project_directory}/outputs/models/").mkdir(parents=True, exist_ok=True)
 
 # %%
 # Checks is files exist, if they do append data (removing duplicates). Otherwise save data to new file.

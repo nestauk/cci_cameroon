@@ -36,6 +36,7 @@ import os
 from ast import literal_eval
 from sklearn.neighbors import KNeighborsClassifier
 import pickle
+from pathlib import Path
 
 # Project modules
 import cci_cameroon
@@ -95,6 +96,10 @@ X_train_embeddings_fr = model_fr.encode(list(X_train))
 # Fit best performing model (KNN)
 knn = KNeighborsClassifier(n_neighbors=knn_nn, p=knn_p, weights=knn_weights)
 knn.fit(X_train_embeddings_fr, y_train)
+
+# %%
+# Add folder if not already created
+Path(f"{project_directory}/outputs/models/").mkdir(parents=True, exist_ok=True)
 
 # %%
 # save model and binarizer to disk
