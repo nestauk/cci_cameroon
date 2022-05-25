@@ -7,11 +7,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: cci_cameroon
+#     display_name: Python 3 (ipykernel)
 #     language: python
-#     name: cci_cameroon
+#     name: python3
 # ---
 
 # %%
@@ -22,6 +22,7 @@ import cci_cameroon
 import matplotlib.pyplot as plt
 import missingno as msno
 import seaborn as sns
+import re
 
 # Set directory
 project_directory = cci_cameroon.PROJECT_DIR
@@ -29,7 +30,7 @@ project_directory = cci_cameroon.PROJECT_DIR
 # %%
 ifrc_data = pd.read_excel(
     f"{project_directory}/inputs/data/COVID_19 Community feedback_Cameroon.xlsx",
-    sheet_name="FEEDBACK DATA_DONNEES",
+    sheet_name="FEEDBACK DATA_DONNEES ",
 )
 
 # %%
@@ -40,6 +41,31 @@ ifrc_data.head(1)  # Check results
 
 # %%
 ifrc_data.info()
+
+# %%
+# setting nesta colors
+enmax_palette = [
+    "#0000FF",
+    "#FF6E47",
+    "#18A48C",
+    "#EB003B",
+    "#9A1BB3",
+    "#FDB633",
+    "#97D9E3",
+]
+color_codes_wanted = [
+    "nesta_blue",
+    "nesta_orange",
+    "nesta_green",
+    "nesta_red",
+    "nesta_purple",
+    "nesta_yellow",
+    "nesta_agua",
+]
+c = lambda x: enmax_palette[color_codes_wanted.index(x)]
+# cmap = sns.diverging_palette(150, 275, s=80, l=55, n=9)
+sns.set_palette(sns.color_palette(enmax_palette))
+pal = sns.color_palette(enmax_palette)  # nesta palette
 
 
 # %% [markdown]
@@ -57,17 +83,66 @@ def percent_missing(df):
 
 # %%
 percent_missing_df = percent_missing(ifrc_data)
+percent_missing_df["col"] = percent_missing_df.column_name
 
 # %%
-percent_missing_df.plot(kind="barh", figsize=(7, 5))
-plt.title("Percent missing in df - all columns")
+percent_missing_df["column_name"] = [
+    re.sub(r"_|\/", " ", x) for x in percent_missing_df.index
+]
+
+# %%
+percent_missing_df.index = [
+    "Id",
+    "Country",
+    "Type of feedback",
+    "Feedback comment",
+    "Feedback channel",
+    "Date",
+    "Age range",
+    "Sex",
+    "District State region",
+    "Number of times",
+    "Other diversity factors",
+    "Category",
+    "Code",
+    "Action taken",
+    "Scale of frequency",
+    "Health zone",
+    "Reviewed code",
+    "Coded by",
+    "Reviewed category",
+    "Feedback translation",
+    "Comment on coding",
+    "Name of data collector",
+    "Health area",
+    "Observation",
+    "Changed",
+]
+
+
+# %%
+percent_missing_df.column_name = percent_missing_df.index
+
+# %%
+percent_missing_df.plot(
+    kind="barh", figsize=(15, 10), color=c("nesta_green"), fontsize=15
+)
+plt.title("Percent of missing values for all columns", size=25, pad=15)
+plt.ylabel("variable", fontsize=20)
+plt.xlabel("Percent missing", fontsize=20)
+plt.tight_layout()
+plt.savefig(f"{project_directory}/outputs/figures/svg/percentage_missing_values.svg")
+plt.savefig(f"{project_directory}/outputs/figures/png/percentage_missing_values.png")
 
 # %%
 # Nine columns completely missing
 completely_missing = list(
-    percent_missing_df[percent_missing_df["percent_missing"] == 100]["column_name"]
+    percent_missing_df[percent_missing_df["percent_missing"] == 100]["col"]
 )
 len(completely_missing)
+
+# %%
+print(completely_missing)
 
 # %%
 # Remove completely missing
@@ -76,9 +151,7 @@ ifrc_data.drop(completely_missing, inplace=True, axis=1)
 # %%
 # Two columns > 97% missing
 high_missing = list(
-    percent_missing_df[percent_missing_df["percent_missing"] > 90].head(2)[
-        "column_name"
-    ]
+    percent_missing_df[percent_missing_df["percent_missing"] > 90].head(2)["col"]
 )
 
 # %%
@@ -99,7 +172,11 @@ plt.title("Percent missing in df - remaining columns")
 # No columns are identical in missing behaviour but category and code have a section of inputs that match in missingness.
 
 # %%
-msno.matrix(ifrc_data)
+plt.tight_layout()
+msno.matrix(ifrc_data, figsize=(15, 10))
+plt.title("Distribution of missing values in each attribute", size=30)
+plt.savefig(f"{project_directory}/outputs/figures/svg/missing_values_by_attribute.svg")
+plt.savefig(f"{project_directory}/outputs/figures/png/missing_values_by_attribute.png")
 
 # %% [markdown]
 # ### Unique values
@@ -142,7 +219,7 @@ ifrc_data.columns
 # %%
 ifrc_data.columns = [
     "id",
-    "data",
+    "date",
     "area",
     "feedback_channel",
     "gender",
@@ -204,11 +281,16 @@ fig, ax = plt.subplots(dpi=100)
 
 print("Number of unique values: " + str(ifrc_data["age_range"].nunique()))
 ifrc_data["age_range"].value_counts(normalize=True).mul(100).sort_values().plot(
-    kind="bar", figsize=(5, 3)
+    kind="bar", figsize=(10, 8)
 )
-plt.title("Percentage per age_range")
+plt.title("Percentage of participants by age range", fontsize=20)
 
-fig.savefig("figs/percent_age.png", bbox_inches="tight")
+fig.savefig(
+    f"{project_directory}/outputs/figures/svg/percent_age.svg", bbox_inches="tight"
+)
+fig.savefig(
+    f"{project_directory}/outputs/figures/png/percent_age.png", bbox_inches="tight"
+)
 
 # %%
 percent_missing_df[percent_missing_df["column_name"] == "AGE RANGE_TRANCHE D'AGE"][
@@ -241,6 +323,96 @@ percent_missing_df[
 
 # %% [markdown]
 # ### Feedback channel
+
+# %%
+plt.figure(figsize=(25, 10))
+ax = sns.catplot(
+    x="type of feedback",
+    kind="count",
+    hue="age_range",
+    height=5,
+    aspect=3,
+    data=ifrc_data,
+)
+
+plt.xlabel("Feedback type", size=20)
+plt.ylabel("Count", size=20)
+plt.title("Feedback type distribution by age range", size=20)
+ax.set(
+    xticklabels=[
+        "Rumours_beliefs_observations",
+        "Suggestions/requests",
+        "Questions",
+        "Appreciation/encouragement",
+        "Sensitive or violent comment",
+    ]
+)
+plt.tight_layout()
+plt.savefig(f"{project_directory}/outputs/figures/svg/feedback_types.svg")
+plt.savefig(f"{project_directory}/outputs/figures/png/feedback_types.png")
+
+# %%
+ifrc_data.columns
+
+# %%
+plt.figure(figsize=(25, 10))
+ax = sns.catplot(
+    x="type of feedback", kind="count", hue="gender", height=5, aspect=3, data=ifrc_data
+)
+
+plt.xlabel("Feedback type", size=20)
+plt.ylabel("Count", size=20)
+plt.title("Feedback type distribution by gender", size=20)
+ax.set(
+    xticklabels=[
+        "Rumours_beliefs_observations",
+        "Suggestions/requests",
+        "Questions",
+        "Appreciation/encouragement",
+        "Sensitive or violent comment",
+    ]
+)
+plt.tight_layout()
+plt.savefig(f"{project_directory}/outputs/figures/svg/feedback_types_by_gender.svg")
+plt.savefig(f"{project_directory}/outputs/figures/png/feedback_types_by_gender.png")
+
+# %%
+ax = sns.histplot(
+    data=ifrc_data, x="type of feedback", kde=True, binwidth=1, color=c("nesta_green")
+)
+ax.set_title("Feedback channels", fontdict={"fontsize": 20}, pad=10)
+ax.set_xlabel("Number of comments", fontsize=20)
+ax.set_ylabel("Count", fontsize=20)
+
+# %%
+ifrc_data.date.iloc[14390]
+
+# %%
+ifrc_data.date
+
+# %%
+ifrc_data.date = pd.to_datetime(ifrc_data.date)
+f1 = (
+    ifrc_data[ifrc_data["type of feedback"] == "Rumors_beliefs_observations"]["code"]
+    .value_counts()
+    .plot(kind="bar", figsize=(12, 6))
+)
+f1.axes.xaxis.set_ticklabels([])
+plt.title("Bar plot - count of values per code")
+
+# %%
+ifrc_data["month_year"] = pd.to_datetime(ifrc_data.date).dt.to_period("M")
+plt.figure(figsize=(15, 9))
+plt.title("Count of rumours, beliefs and observations over time", size=20, pad=10)
+plt.ylabel("Count", size=15)
+plt.xlabel("Date", size=15)
+ifrc_data[
+    ifrc_data["type of feedback"] == "Rumors_beliefs_observations"
+].month_year.value_counts().plot(kind="bar", color=c("nesta_yellow"))
+plt.savefig(f"{project_directory}/outputs/figures/svg/rumour_belief_over_time.svg")
+plt.savefig(f"{project_directory}/outputs/figures/png/rumour_belief_over_time.png")
+
+# %%
 
 # %%
 ifrc_data["feedback_channel"].value_counts(normalize=True).mul(100).head(5)
@@ -358,12 +530,21 @@ feedback_type_cat[
 ].set_index("category")["count"].sort_values()
 
 # %%
+feedback_type_cat["cat"] = [x.replace("_", " ") for x in feedback_type_cat.category]
+
+# %%
+
 feedback_type_cat[
     feedback_type_cat["type of feedback"] == "Rumors_beliefs_observations"
-].set_index("category")["count"].sort_values().plot(
-    kind="barh", figsize=(10, 9), color="#993344"
+].set_index("cat")["count"].sort_values().plot(
+    kind="barh", figsize=(15, 9), color=c("nesta_orange")
 )
-plt.title("Categories under rumours, beliefs and observations")
+plt.title("Categories under rumours, beliefs and observations", size=20, pad=25)
+plt.xlabel("Count", size=15)
+plt.ylabel("Category", size=15)
+plt.tight_layout()
+plt.savefig("figs/rumours_beliefs_observations.svg")
+plt.savefig("figs/rumours_beliefs_observations.png")
 
 # %% [markdown]
 # #### Code
@@ -492,6 +673,8 @@ plt.title("Beliefs_about_behaviors_that_protect_people_prevention")
 ifrc_data.head(3)
 
 # %%
+
+
 affected_by_disease = ifrc_data[
     ifrc_data["code"] == "Belief about who is or is not affected by the disease"
 ]
@@ -543,9 +726,9 @@ rum_bel_ob = ifrc_data[
 rum_bel_ob["language"] = rum_bel_ob["feedback_comment"].apply(lambda x: detect(x))
 
 # %%
-sum(
-    rum_bel_ob.groupby("language").feedback_comment.count().sort_values(ascending=False)
-)
+rum_bel_ob.groupby("language").feedback_comment.count().sort_values(
+    ascending=False
+).head(7).reset_index()
 
 # %%
 pd.DataFrame(
