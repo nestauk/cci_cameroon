@@ -8,11 +8,11 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.13.2
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: cci_cameroon
 #     language: python
-#     name: python3
+#     name: cci_cameroon
 # ---
 
 # %%
@@ -47,7 +47,6 @@ from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 import community
 import matplotlib
-import seaborn as sns
 
 # %%
 TOKENIZERS_PARALLELISM = False
@@ -272,10 +271,16 @@ modularity = community.modularity(partitions, G)
 modularity
 
 # %%
+partitions
+
+# %%
 ncoms = algorithms.leiden(G)
 
 # %%
 len(ncoms.communities)
+
+# %%
+ncoms.communities[0]
 
 # %%
 evaluation.modularity_density(G, ncoms)
@@ -365,8 +370,14 @@ sample_silhouette_scores = silhouette_samples(
 )
 
 # %%
-# sample_silhouette_scores
-# print(get_communities_with_threshold(comsM400.communities,sample_silhouette_scores,0.3,data,"comment"))
+sample_silhouette_scores
+
+# %%
+print(
+    get_communities_with_threshold(
+        comsM400.communities, sample_silhouette_scores, 0.3, data, "comment"
+    )
+)
 
 # %% [markdown]
 # ## Silhouette scores for the different communities computed and communities ranked
@@ -399,10 +410,14 @@ sample_silhouette_scores400 = silhouette_samples(
 )
 
 # %%
-# print(get_communities_with_threshold(comsM400.communities,sample_silhouette_scores400,0.3,data,"comment"))
+print(
+    get_communities_with_threshold(
+        comsM400.communities, sample_silhouette_scores400, 0.3, data, "comment"
+    )
+)
 
 # %%
-# list(data.iloc[comsM400.communities[0]].comment)
+list(data.iloc[comsM400.communities[0]].comment)
 
 # %% [markdown]
 # ## Run the clustering on different samples and inspect the formed clusters
@@ -463,7 +478,11 @@ silhouette_scores_samp = silhouette_samples(
 silhouette_score(sample_data_embeddings, labels_samp)
 
 # %%
-# print(get_communities_with_threshold(comsSamp.communities,silhouette_scores_samp,0.2,sample_data,"comment"))
+print(
+    get_communities_with_threshold(
+        comsSamp.communities, silhouette_scores_samp, 0.2, sample_data, "comment"
+    )
+)
 
 # %%
 adjacency2 = generate_adjacency_matrix(
@@ -488,13 +507,15 @@ draw_communities_graph(
 evaluation.modularity_density(GG2, coms22)
 
 # %%
-# list(data.comment.iloc[coms22.communities[0]])
+list(data.comment.iloc[coms22.communities[0]])
 
 # %% [markdown]
 # ## Using ground truth, we evaluate the homogeneity of the clusters formed
 
 # %%
-# list(data.category_id[coms22.communities[0]]) #inspecting the ground truth as per labelling exercise
+list(
+    data.category_id[coms22.communities[0]]
+)  # inspecting the ground truth as per labelling exercise
 
 # %%
 # evaluating connectivity of the communities formed  using modularity
@@ -632,6 +653,20 @@ cluster_utils.subcluster_nodes(W=W_cluster, l=0, **clustering_params)
 graph = cluster_utils.build_graph(W_cluster, kNN=30)
 
 # %%
+N = 100
+N_consensus = 20
+
+# %%
+# Create a ConsensusClustering instance
+clust = cluster_utils.ConsensusClustering(graph=graph, N=100, N_consensus=20, seed=0)
+
+# %%
+# Find the consensus partition
+consensus_partition = clust.consensus_partition
+# Check the sizes of the clusters
+clust.describe_partition(consensus_partition)
+
+# %%
 # Create a ConsensusClustering instance
 clust = cluster_utils.ConsensusClustering(graph=graph, N=100, N_consensus=20, seed=0)
 # Find the consensus partition
@@ -648,13 +683,20 @@ consensus_partition = clust.consensus_partition
 clust.describe_partition(consensus_partition)
 
 # %%
-1 - 2 / 61
+# Create a ConsensusClustering instance
+clust = cluster_utils.ConsensusClustering(graph=graph, N=200, N_consensus=25, seed=0)
+# Find the consensus partition
+consensus_partition = clust.consensus_partition
+# Check the sizes of the clusters
+clust.describe_partition(consensus_partition)
 
 # %%
-1 - 5 / 58
-
-# %%
-1 - 3 / 69
+# Create a ConsensusClustering instance
+clust = cluster_utils.ConsensusClustering(graph=graph, N=100, N_consensus=25, seed=0)
+# Find the consensus partition
+consensus_partition = clust.consensus_partition
+# Check the sizes of the clusters
+clust.describe_partition(consensus_partition)
 
 # %%
 model_data_consensus = model_data.copy()
@@ -663,21 +705,20 @@ model_data_consensus = model_data.copy()
 model_data_consensus["cluster"] = consensus_partition
 
 # %%
-model_data_consensus[model_data_consensus.cluster == 10]["comment"].to_list()
+model_data_consensus[model_data_consensus.cluster == 0]["comment"].to_list()
+
+# %%
 
 # %%
 # Sanity check by plotting the sorted co-clustering occurrence matrix
-cluster_utils.plot_sorted_matrix(clust.COOC, consensus_partition2)
+cluster_utils.plot_sorted_matrix(clust.COOC, consensus_partition)
 
 # %%
 # Use the co-clustering occurrence matrix to estimate node "affinity" to
 # their own cluster as well as to other clusters
-p = np.array(consensus_partition2)
+p = np.array(consensus_partition)
 M = cluster_utils.node_affinity(clust.COOC, p)
 cluster_utils.node_affinity_plot(M, p, aspect_ratio=0.03)
-
-# %%
-M
 
 # %%
 # Use the node affinity matrix to estimate the average cluster affinity to
@@ -783,68 +824,6 @@ M = cluster_utils.node_affinity(clust.COOC, p)
 cluster_utils.node_affinity_plot(M, p, aspect_ratio=0.03)
 
 # %%
-M.shape
-
-
-# %%
-def cluster_affinity_matrix2(
-    M, cluster_labels, symmetric=True, plot=True, cmap="Blues"
-):
-    """
-    Calculate each cluster's affinity to other clusters based on their constituent
-    nodes' affinities to the different clusters.
-
-    Parameters
-    ----------
-    M (numpy.ndarray):
-        Node affinity matrix.
-    cluster_labels (list of int):
-        Clustering partition with integers denoting cluster labels.
-    symmetric (boolean):
-        If True, ensures that the cluster affinity matrix is symmetric.
-    symmetric (boolean):
-        Determines whether the cluster affinity matrix is displayed.
-
-    Returns
-    -------
-    C (numpy.ndarray):
-        Cluster affinity matrix, where elements (k,l) indicates the average
-        co-clustering occurrence of cluster k nodes with the nodes of cluster l.
-    """
-
-    n_clust = len(np.unique(cluster_labels))
-    C = np.zeros((9, 9))
-    for i in range(9):
-        for j in range(9):
-            if np.isnan(np.mean(M[np.where(cluster_labels == i)[0], j])) == False:
-                C[i, j] = np.mean(M[np.where(cluster_labels == i)[0], j])
-
-    if symmetric == True:
-        C = 0.5 * C + 0.5 * C.T
-
-    if plot == True:
-        plt.imshow(C, cmap=cmap)
-        plt.xlabel("cluster", size=20)
-        plt.ylabel("cluster", size=20)
-        plt.colorbar()
-        plt.title("Cluster affinity to other clusters", size=20)
-        plt.show()
-    return C
-
-
-# %%
-# Use the node affinity matrix to estimate the average cluster affinity to
-# itself and to other clusters
-plt.figure(figsize=(10, 10))
-C = cluster_affinity_matrix2(M, p, symmetric=True, plot=True)
-
-# %%
-# Use the node affinity matrix to estimate the average cluster affinity to
-# itself and to other clusters
-plt.figure(figsize=(10, 10))
-C = cluster_affinity_matrix2(M, p, symmetric=True, plot=True)
-
-# %%
 # Use the node affinity matrix to estimate the average cluster affinity to
 # itself and to other clusters
 plt.figure(figsize=(10, 10))
@@ -854,7 +833,7 @@ C = cluster_utils.cluster_affinity_matrix(M, p, symmetric=True, plot=True)
 # While clusters are overall well seperated (as judged by the clustering algorithm) note that there are some non-zero affinities between some clusters, e.g., cluster 2 and cluster 4
 
 # %%
-model_data[model_data.consensus_g == 3]["comment"].to_list()
+model_data[model_data.consensus_g == 13]["comment"]
 
 # %%
 # #!pip install umap-learn
@@ -874,66 +853,16 @@ model_data["x"] = s_embedding[:, 0]
 model_data["y"] = s_embedding[:, 1]
 
 # %%
-enmax_palette = [
-    "#0000FF",
-    "#FF6E47",
-    "#18A48C",
-    "#EB003B",
-    "#9A1BB3",
-    "#FDB633",
-    "#97D9E3",
-    "#FF6103",
-    "#7B7300",
-    "#8B6508",
-]
-color_codes_wanted = [
-    "nesta_blue",
-    "nesta_orange",
-    "nesta_green",
-    "nesta_red",
-    "nesta_purple",
-    "nesta_yellow",
-    "nesta_agua",
-    "other",
-    "other1",
-    "other2",
-    "other3",
-]
-c = lambda x: enmax_palette[color_codes_wanted.index(x)]
-# cmap = sns.diverging_palette(150, 275, s=80, l=55, n=9)
-sns.set_palette(sns.color_palette(enmax_palette))
-pal = sns.color_palette(enmax_palette)  # nesta palette
 # generate colors for the map
-# from random import randint
-# colors = []
-# for i in range(len(model_data.consensus.unique())):
-#    colors.append('#%06X' % randint(0, 0xFFFFFF))
-colors = [
-    "#32CD32",
-    "#3D59AB",
-    "#9A1BB3",
-    "#050505",
-    "#DC143C",
-    "#CD9B1D",
-    "#FF6E47",
-    "#9400D3",
-    "#8B7355",
-    "#8B6508",
-    "#18A48C",
-    "#EB003B",
-    "#FDB633",
-    "#97D9E3",
-    "#8B8378",
-    "#0000FF",
-]
+from random import randint
+
+colors = []
+for i in range(len(model_data.consensus.unique())):
+    colors.append("#%06X" % randint(0, 0xFFFFFF))
 
 
 # %%
-colors
-
-
-# %%
-def plot_clusters2(df, cluster_column, file_path=None):
+def plot_clusters(df, cluster_column, file_path=None):
     """Plots a scatter plot of the clusters with each cluster having a different color.
     Parameters:
         df: a dataframe which contains a column cluster_column that holds the cluster lables (int). It also contains
@@ -951,23 +880,8 @@ def plot_clusters2(df, cluster_column, file_path=None):
             color=colors[cluster],
         )
     plt.axis("off")
-    # plt.legend(["Belief on wearing face mask","None respect of health measures","Covid19 transmission modes","covid19 transmission modes","mode of transmission","Observation on hand washing","Covid19 does not exist in this area","Covid19 is business","Covid19 is finished","Covid19 is finished"])
-    plt.legend(
-        [
-            "Beliefs about wearing face masks",
-            "People not respecting health measures",
-            "Belief that Covid exists or is real",
-            "Beliefs about hand washing",
-            "Covid is terminated",
-            "Covid transmission modes",
-            "Covid transmission modes",
-            "Covid19 does not exist in this area",
-            "Belief that institutions make money from Covid",
-        ],
-        loc=("lower right"),
-        fontsize=10,
-    )
-    plt.title("Clusters formed from the community detection algorithm", size=20)
+    # plt.legend(loc=(1.01,0.4))
+    plt.title("Clusters formed from community detection algorithm")
     if file_path != None:
         name = str(time()) + ".png"
         plt.savefig(f"{file_path}/{name}")
@@ -975,72 +889,11 @@ def plot_clusters2(df, cluster_column, file_path=None):
 
 
 # %%
-[
-    "Belief on wearing face mask",
-    "None respect of health measures",
-    "Belief that covid19 exists or is real",
-    "4 Belief on hand washing ",
-    "3 Covid19 is terminated",
-    "8 Covid19 transmission modes",
-    "2 covid19 transmission modes",
-    "5 Covid19 does not exist in this area",
-    "6 Belief that institutions make money from covid19",
-]
-
-# %%
-print(model_data[model_data.consensus_g == 3]["comment"].to_list())
-
-# %%
-model_data_viz = model_data[model_data.consensus_g < 9].copy()
-
-# %%
-model_data_viz.consensus_g.unique()
-
-# %%
-plot_clusters2(model_data_viz, "consensus_g")
+plot_clusters(model_data, "consensus")
 plt.savefig("clusters.svg")
 
 # %%
-model_data_viz["consensus_label"] = [
-    "Beliefs about wearing face masks"
-    if x == 1
-    else "People not respecting health measures"
-    if x == 7
-    else "Belief that Covid exists or is real"
-    if x == 0
-    else "Beliefs about hand washing"
-    if x == 4
-    else "Covid is terminated"
-    if x == 3
-    else "Covid transmission modes"
-    if x == 8
-    else "Covid transmission modes"
-    if x == 2
-    else "Covid19 does not exist in this area"
-    if x == 5
-    else "Belief that institutions make money from Covid"
-    for x in model_data_viz.consensus_g
-]
 
-
-# %%
-model_data_viz[model_data_viz.consensus_g == 0]["consensus_label"]
-
-# %%
-model_data_viz.columns
-
-# %%
-nn = model_data_viz.groupby(["category_id", "consensus_label"]).size()
-# nn= np.asarray(nn).reshape(67,1)
-
-
-# %%
-plot_df = nn.reset_index().pivot(index="category_id", columns="consensus_label")
-
-
-# %%
-plt.figure(figsize=(10, 10))
-sns.heatmap(plot_df)
 
 # %%
 import seaborn as sns
@@ -1135,3 +988,43 @@ model_data.head()
 #
 # * Findind a suitable metric that could be used to assess the quality of comments in subgroups
 #
+
+# %%
+# to_use2.to_excel("to_use2.xlsx",index=False)
+
+# %%
+# model_data.to_excel("model_data.xlsx",index=False)
+
+# %%
+# data.to_excel("data.xlsx",index=False)
+
+# %%
+# to_use2 = pd.read_excel("to_use2.xlsx")
+# model_data= pd.read_excel("model_data.xlsx")
+# data= pd.read_excel("data.xlsx")
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%

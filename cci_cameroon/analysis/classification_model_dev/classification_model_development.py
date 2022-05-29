@@ -37,6 +37,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.svm import SVC
 from collections import Counter
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_recall_fscore_support
 
 # Project modules
 import cci_cameroon
@@ -306,3 +308,36 @@ print("----")
 print("Naive Bayes best model:")
 print(search_nb.best_estimator_)
 print(best_params_fr_nb)
+
+# %%
+# Predict on test set
+y_pred_knn = search_knn.predict(X_test_embeddings_fr)
+y_pred_rf = search_rf.predict(X_test_embeddings_fr)
+y_pred_dt = search_dt.predict(X_test_embeddings_fr)
+y_pred_nb = search_nb.predict(X_test_embeddings_fr)
+y_pred_svm = search_svm.predict(X_test_embeddings_fr)
+
+# %%
+print(
+    "KNN: " + str(precision_recall_fscore_support(y_test, y_pred_knn, average="micro"))
+)
+print("RF: " + str(precision_recall_fscore_support(y_test, y_pred_rf, average="micro")))
+print("DT: " + str(precision_recall_fscore_support(y_test, y_pred_dt, average="micro")))
+print("NB: " + str(precision_recall_fscore_support(y_test, y_pred_nb, average="micro")))
+print(
+    "SVM: " + str(precision_recall_fscore_support(y_test, y_pred_svm, average="micro"))
+)
+
+# %%
+print("KNN: " + str(f1_score(y_test, y_pred_knn, average="micro")))
+print("RF: " + str(f1_score(y_test, y_pred_rf, average="micro")))
+print("DT: " + str(f1_score(y_test, y_pred_dt, average="micro")))
+print("NB: " + str(f1_score(y_test, y_pred_nb, average="micro")))
+print("SVM: " + str(f1_score(y_test, y_pred_svm, average="micro")))
+
+# %%
+print("KNN: " + str(f1_score(y_test, y_pred_knn, average="macro")))
+print("RF: " + str(f1_score(y_test, y_pred_rf, average="macro")))
+print("DT: " + str(f1_score(y_test, y_pred_dt, average="macro")))
+print("NB: " + str(f1_score(y_test, y_pred_nb, average="macro")))
+print("SVM: " + str(f1_score(y_test, y_pred_svm, average="macro")))
