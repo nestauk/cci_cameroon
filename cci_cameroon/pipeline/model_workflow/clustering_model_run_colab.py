@@ -15,11 +15,37 @@
 # ---
 
 # %%
+
+# %% [markdown]
+# Performing concensus clustering (Google colab version)
+# Use this notebook to run the `rumour_clustering_model_development_concesus_clustering` script on google colab.
+#
+# Steps to take to run:
+#
+# Upload the following files to Google Colab
+# * `clustering_helper_function.py` found in `cci_cameroon/getters` folder
+# * `cluster_utils.py` found in `cci_cameroon/pipeline` folder
+# *  `not_classified.xlsx` found under `inputs/data` folder
+#
+# Uncomment the pip install lines in the first cell
+# The output of this script is the clusters.xlsx file which contains the clusters of rumours created by the algorthm.
+
+# %%
+# #!pip install cdlib
+# #!pip install faiss-cpu --no-cache
+# #!pip install sentence-transformers
+# #!pip install xlsxwriter
+# #!pip install leidenalg
+# #!pip install umap-learn
+# #!pip install cairocffi
+# #!pip install igraph
+
+# %%
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import cci_cameroon
 from cdlib import evaluation
+from cdlib import algorithms
 
 # %matplotlib inline
 import faiss
@@ -27,12 +53,7 @@ from faiss import normalize_L2
 from sentence_transformers import SentenceTransformer
 import networkx as nx
 import cdlib
-import igraph as ig
-import cairocffi
-import leidenalg as la
-from cdlib import algorithms
-from cci_cameroon.pipeline import cluster_utils
-from cci_cameroon.pipeline.clustering_helper_functions import (
+from clustering_helper_functions import (  # use the right location of the file for import to be successful
     generate_colors,
     draw_communities_graph,
     generate_adjacency_matrix,
@@ -42,24 +63,26 @@ from cci_cameroon.pipeline.clustering_helper_functions import (
     compute_community_silhuoette_scores,
     get_communities_with_threshold,
     generate_community_labels,
-    plot_clusters,
 )
+import cluster_utils
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 import community
+import matplotlib
+import seaborn as sns
+from time import time
 import xlsxwriter
+import igraph as ig
+import leidenalg as la
+import cairocffi
 import umap.umap_ as umap
 import seaborn as sns
 from time import time
 import random
 
 # %%
-project_directory = cci_cameroon.PROJECT_DIR
-
-
-# %%
 # load unclassified comments comming in from the classification model
-model_data = pd.read_excel(f"{project_directory}/outputs/data/not_classified.xlsx")
+model_data = pd.read_excel("not_classified.xlsx")
 column_name = "comment"  # holds the column of interest in the data
 
 # %%
@@ -184,8 +207,6 @@ C = cluster_utils.plot_confusion_matrix(
     normalize_to=0,
 )
 
-# %%
-
 # %% [markdown]
 # ## Visualizing the clusters
 
@@ -214,5 +235,3 @@ with xlsxwriter.Workbook(f"{project_directory}/outputs/data/clusters.xlsx") as w
             j = i + 1
             ex_col = "A" + str(j)
             worksheet.write(ex_col, community[i])
-
-# %%

@@ -15,14 +15,36 @@
 #     name: python3
 # ---
 
+# %% [markdown]
+# Performing concensus clustering (Google colab version)
+# Use this notebook to run the `rumour_clustering_model_development_concesus_clustering` script on google colab.
+#
+# Steps to take to run:
+#
+# Upload the following files to Google Colab
+# * `clustering_helper_function.py` found in `cci_cameroon/getters` folder
+# * `cluster_utils.py` found in `cci_cameroon/pipeline` folder
+# *  `model_data.xlsx` found under `inputs/data` folder
+#
+# Uncomment the pip install lines in the first cell
+# The output of this script is the clusters.xlsx file which contains the clusters of rumours created by the algorthm.
+
+# %%
+# #!pip install cdlib
+# #!pip install faiss-cpu --no-cache
+# #!pip install sentence-transformers
+# #!pip install xlsxwriter
+# #!pip install leidenalg
+# #!pip install umap-learn
+# #!pip install cairocffi
+# #!pip install igraph
+
 # %%
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import cci_cameroon
-from langdetect import detect, detect_langs
-from googletrans import Translator
 from cdlib import evaluation
+from cdlib import algorithms
 
 # %matplotlib inline
 import faiss
@@ -30,8 +52,7 @@ from faiss import normalize_L2
 from sentence_transformers import SentenceTransformer
 import networkx as nx
 import cdlib
-from cdlib import algorithms
-from cci_cameroon.getters.clustering_helper_functions import (
+from clustering_helper_functions import (  # use the right location of the file for import to be successful
     generate_colors,
     draw_communities_graph,
     generate_adjacency_matrix,
@@ -42,7 +63,7 @@ from cci_cameroon.getters.clustering_helper_functions import (
     get_communities_with_threshold,
     generate_community_labels,
 )
-from cci_cameroon.pipeline import cluster_utils
+import cluster_utils
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 import community
@@ -61,9 +82,6 @@ import random
 # %%
 TOKENIZERS_PARALLELISM = False
 
-# %%
-# #!pip install umap-learn
-
 # %% [markdown]
 # # Approach used
 #
@@ -76,14 +94,8 @@ TOKENIZERS_PARALLELISM = False
 #
 
 # %%
-project_directory = cci_cameroon.PROJECT_DIR
-
-# %%
 # load cleaned data
-# read cleaned data from inputs folder
-to_use2 = pd.read_excel(f"{project_directory}/inputs/data/to_use2.xlsx")
-model_data = pd.read_excel(f"{project_directory}/inputs/data/model_data.xlsx")
-data = pd.read_excel(f"{project_directory}/inputs/data/data.xlsx")
+model_data = pd.read_excel("model_data.xlsx")
 
 # %%
 model_data.drop("index", axis=1, inplace=True)
@@ -91,7 +103,6 @@ model_data.drop("index", axis=1, inplace=True)
 # %%
 # using the french_semantic model for word embedding
 model = SentenceTransformer("Sahajtomar/french_semantic")
-# model = SentenceTransformer("distiluse-base-multilingual-cased-v1")
 
 # %% [markdown]
 # ## Investigating the variation of metrics with changing cluster sizes and number of neighbors
@@ -150,15 +161,8 @@ df_all = pd.concat(df_list).reset_index().drop("index", axis=1)
 df_all.head(50)
 
 # %%
-# In this section, we manually inspect the clusters formed when different number of neighbors are considered.
-# actual_comments_list[0][0][4]  ## 1,1,1,.8,1
-# actual_comments_list[0][3][0]   ##
-# actual_comments_list[0][1][1]
+# Created communities
 actual_comments_list
-
-# %%
-# The rejected clusters for each criterion are inspected
-# rejected_groups_list#[0][0][0]# 0(business,exists or real,transmission,not exist),1(transmission -97%,business -2%)
 
 # %% [markdown]
 # s_size  neibors AMI  	modularity	modu_density	tot_clusters	silhouette_av	clus_retain comments  clus_qty
@@ -167,6 +171,9 @@ actual_comments_list
 # 255	     15	   1.000000	 0.697397	  81.028345     	7	          0.245696	      4           140       75.5%
 # 255	     10    0.858371	 0.744165	  81.985194	       10	          0.234848	      5           128       70.2%
 # 306	     15	   0.968674  0.707146	  98.299726	        9	          0.243298	      5           174       73.6%
+
+# %%
+# model_data.drop("index",axis=1,inplace=True)
 
 # %% [markdown]
 # ## Observation on growing sizes
@@ -211,201 +218,7 @@ df_n = pd.concat([df_n1, df_n2, df_n3]).reset_index().drop("index", axis=1)
 comment_lists_n, rejected_groups_n, df_st_n = get_metrics(df_n, "comment", model)
 
 # %%
-# do I go for large groups which sometimes would be bad or smaller groups which could
-# be merged with >80% homogenuity?
 df_st_n
-
-# %%
-comment_lists_n[1][0]
-
-# %%
-sentence_embeddings400 = model.encode(data.comment)
-
-# %%
-index = faiss.index_factory(
-    sentence_embeddings400.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
-)
-# setting the number of neighbors to consider for graph connectivity
-index.train(sentence_embeddings400)
-index.add(sentence_embeddings400)
-similarity_distance_mat, sim_positions_mat = index.search(
-    sentence_embeddings400, 5  # consider only the first n elements
-)
-weight_mat = generate_adjacency_matrix2(
-    sim_positions_mat, 5, sentence_embeddings400.shape[0], similarity_distance_mat
-)
-G = nx.from_numpy_matrix(weight_mat, create_using=nx.Graph(), parallel_edges=False)
-partitions = community.best_partition(G)
-comu = algorithms.leiden(G)
-
-# %%
-labels_best = []
-for n in partitions.items():
-    labels_best.append(n[1])
-
-# %%
-labels_com = generate_community_labels(
-    comu.communities, sentence_embeddings400.shape[0]
-)
-
-# %%
-# compute adjusted mutual information score for the clusters formed by the two algorithms.
-adjusted_mutual_info_score(labels_best, labels_com)
-
-# %%
-# The performance of a partition is the ratio of the number of intra-community edges
-# plus inter-community non-edges with the total number of potential edges.
-nx.algorithms.community.quality.performance(G, comu.communities)
-
-# %%
-sil_score = silhouette_samples(sentence_embeddings400, labels_com, metric="cosine")
-
-# %%
-get_communities_with_threshold(comu.communities, sil_score, 0.3, data, "comment")
-
-# %%
-evaluation.modularity_density(G, comu)
-
-# %%
-
-partitions = community.best_partition(G)
-
-# %%
-modularity = community.modularity(partitions, G)
-modularity
-
-# %%
-ncoms = algorithms.leiden(G)
-
-# %%
-len(ncoms.communities)
-
-# %%
-evaluation.modularity_density(G, ncoms)
-
-# %% [markdown]
-#  **using a weighted graph doesn't cause significant change in the commun-ties formed**
-
-# %%
-# embed the comments before spliting to different subgroups
-comments_400_embeddings = model.encode(data.comment)
-
-# %%
-ind400 = faiss.index_factory(
-    comments_400_embeddings.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
-)
-faiss.normalize_L2(comments_400_embeddings)  # to be used for inner product computation
-# setting the number of neighbors to consider for graph connectivity
-neighbors2 = 10
-ind400.train(comments_400_embeddings)
-ind400.add(comments_400_embeddings)
-similarity_distance400, sim_positions400 = ind400.search(
-    comments_400_embeddings, neighbors2  # consider only the first n elements
-)
-
-# %%
-edges, weighted_edges = generate_edges(
-    data, "comment", sim_positions400, similarity_distance400
-)
-
-# %%
-nodes = list(set(data.comment))
-
-# %%
-NG400 = nx.Graph()
-NG400.add_nodes_from(nodes)
-NG400.add_edges_from(edges)
-NG400.add_weighted_edges_from(weighted_edges)
-
-# %%
-Ncom400 = algorithms.leiden(NG400)
-
-# %%
-# adjacency matrix for 400 comments for weighted graph
-weighted_mat_400 = generate_adjacency_matrix2(
-    sim_positions400,
-    neighbors2,
-    comments_400_embeddings.shape[0],
-    similarity_distance400,
-)
-
-# %%
-GM400 = nx.from_numpy_matrix(
-    weighted_mat_400, create_using=nx.Graph(), parallel_edges=False
-)
-
-# %%
-nx.draw(GM400, with_labels=True)
-
-# %%
-# detect communities
-comsM400 = algorithms.leiden(GM400)
-
-# %%
-len(comsM400.communities)
-
-# %%
-data.iloc[comsM400.communities[0]].comment
-
-# %%
-# draw the communities formed
-draw_communities_graph(
-    GM400, generate_colors(len(comsM400.communities)), comsM400.communities
-)
-
-# %%
-evaluation.modularity_density(GM400, comsM400)
-
-# %%
-# generate labels for nodes in the graph to use in computing silhouette scores.
-labels2 = generate_community_labels(
-    comsM400.communities, comments_400_embeddings.shape[0]
-)
-
-# %%
-sample_silhouette_scores = silhouette_samples(
-    comments_400_embeddings, labels2, metric="cosine"
-)
-
-# %%
-# sample_silhouette_scores
-# print(get_communities_with_threshold(comsM400.communities,sample_silhouette_scores,0.3,data,"comment"))
-
-# %% [markdown]
-# ## Silhouette scores for the different communities computed and communities ranked
-# * The data is sorted in order of silhoutte score and all clusters presented to be reviewed.
-
-# %%
-# add silhouette score column to the dataframe.
-sil_scores = compute_community_silhuoette_scores(
-    comsM400.communities, sample_silhouette_scores
-)
-# to_use2["silhouette_score"] = [None]*len(sample_silhouette_scores)
-# for c in range(len(sil_scores)):
-#    to_use2.silhouette_score.iloc[comsM.communities[c]]=sil_scores[c]
-
-
-# %%
-# sorted data in order of silhouette score and can present sorted clusters to be reviewed
-# to_use2.sort_values("silhouette_score",axis=0, ascending=False)
-
-# %%
-# generate labels for 400 comments
-labels400 = generate_community_labels(
-    comsM400.communities, comments_400_embeddings.shape[0]
-)
-
-# %%
-# compute individual data point silhouette scores
-sample_silhouette_scores400 = silhouette_samples(
-    comments_400_embeddings, labels400, metric="cosine"
-)
-
-# %%
-# print(get_communities_with_threshold(comsM400.communities,sample_silhouette_scores400,0.3,data,"comment"))
-
-# %%
-# list(data.iloc[comsM400.communities[0]].comment)
 
 # %% [markdown]
 # ## Run the clustering on different samples and inspect the formed clusters
@@ -507,58 +320,6 @@ modularity2 = evaluation.modularity_density(GG2, coms22)
 modularity2.score
 
 # %% [markdown]
-# # Working with a larger dataset
-
-# %%
-sentence_embeddings = model.encode(data.comment)
-
-# %%
-indp = faiss.index_factory(
-    sentence_embeddings.shape[1], "Flat", faiss.METRIC_INNER_PRODUCT
-)
-faiss.normalize_L2(sentence_embeddings)  # to be used for inner product computation
-neighbors = 10
-
-# %%
-indp.train(sentence_embeddings)
-indp.add(sentence_embeddings)
-distance_matric, position = indp.search(
-    sentence_embeddings, neighbors
-)  # create similarity matrix for the data
-
-# %%
-
-# %%
-# inspect the distribution of the silhouette scores to pick a cutoff for creating edges between nodes in a graph
-ax = plt.figure(figsize=(10, 5))
-plt.hist(list(matplotlib.cbook.flatten(distance_matric)))
-plt.xlabel("Similarity score")
-plt.ylabel("frequency")
-plt.title("Distribution of similarity score for 1300 comments")
-plt.show()
-
-# %% [markdown]
-# To generate weighted graph (weights being similarity scores), we Settled at 0.4 as threshold for an edge to be formed. Using this value as cutoff leads to the creation of clusters that are at least 80% homogeneous. A larger value considered leads to many clusters being formed with only one comment.
-
-
-# %%
-AA = generate_adjacency_matrix(position, neighbors, sentence_embeddings.shape[0])
-
-# %%
-# load the graph
-GG = nx.from_numpy_matrix(AA, create_using=nx.Graph())
-print(GG)
-# visualize the graph
-nx.draw(GG, with_labels=False)
-
-# %%
-# using leiden community detection algorithm on the dataset
-comss = algorithms.leiden(GG)
-
-# %%
-draw_communities_graph(GG, generate_colors(len(comss.communities)), comss.communities)
-
-# %% [markdown]
 # ## Generating clusters using data with eight different codes obtained from workshop
 
 # %%
@@ -602,8 +363,7 @@ N_nn = N // len(nearest_neighbours)
 # Which clusters to break down from the partition
 clusters = "all"  # Either a list of integers, or 'all'
 # Path to save the clustering results
-fpath = f"{project_directory}/outputs/data/concensus_clusters"
-
+fpath = ""
 clustering_params = {
     "N": N,
     "N_consensus": N_consensus,
@@ -651,6 +411,7 @@ consensus_partition = clust.consensus_partition
 clust.describe_partition(consensus_partition)
 
 # %%
+# cluster homogeneity
 1 - 2 / 61
 
 # %%
@@ -725,6 +486,8 @@ similarity_distance = np.array(similarity_distance.clip(min=0)).copy()
 
 # %%
 np.fill_diagonal(similarity_distance, 0)  # remove self-links
+
+# %%
 
 # %%
 # construct a graph and use it for concensus clustering
@@ -813,17 +576,11 @@ def cluster_affinity_matrix2(
         plt.colorbar()
         plt.title("Cluster affinity to other clusters", size=20)
         plt.show()
-        plt.savefig(f"{project_directory}/outputs/figures/svg/node_affinity.svg")
-        plt.savefig(f"{project_directory}/outputs/figures/png/node_affinity.png")
+        plt.savefig("node_affinity.svg")
+        plt.savefig("node_affinity.png")
 
     return C
 
-
-# %%
-# Use the node affinity matrix to estimate the average cluster affinity to
-# itself and to other clusters
-plt.figure(figsize=(10, 10))
-C = cluster_affinity_matrix2(M, p, symmetric=True, plot=True)
 
 # %%
 # Use the node affinity matrix to estimate the average cluster affinity to
@@ -891,12 +648,28 @@ c = lambda x: enmax_palette[color_codes_wanted.index(x)]
 sns.set_palette(sns.color_palette(enmax_palette))
 pal = sns.color_palette(enmax_palette)  # nesta palette
 # generate colors for the map
-from random import randint
-
-colors = []
-for i in range(len(model_data.consensus.unique())):
-    colors.append("#%06X" % randint(0, 0xFFFFFF))
-# colors = ["#32CD32","#3D59AB","#9A1BB3", "#050505","#DC143C","#CD9B1D", "#FF6E47", "#9400D3","#8B7355","#8B6508","#18A48C", "#EB003B", "#FDB633", "#97D9E3","#8B8378","#0000FF"]
+# from random import randint
+# colors = []
+# for i in range(len(model_data.consensus.unique())):
+#    colors.append('#%06X' % randint(0, 0xFFFFFF))
+colors = [
+    "#32CD32",
+    "#3D59AB",
+    "#9A1BB3",
+    "#050505",
+    "#DC143C",
+    "#CD9B1D",
+    "#FF6E47",
+    "#9400D3",
+    "#8B7355",
+    "#8B6508",
+    "#18A48C",
+    "#EB003B",
+    "#FDB633",
+    "#97D9E3",
+    "#8B8378",
+    "#0000FF",
+]
 
 
 # %%
@@ -938,8 +711,8 @@ def plot_clusters2(df, cluster_column, file_path=None):
     if file_path != None:
         name = str(time()) + ".png"
         name2 = str(time()) + ".svg"
-        plt.savefig(f"{file_path}/png/{name}")
-        plt.savefig(f"{file_path}/svg/{name2}")
+        plt.savefig(f"{file_path}/{name}")
+        plt.savefig(f"{file_path}/{name2}")
     plt.show()
 
 
@@ -966,10 +739,7 @@ model_data_viz = model_data[model_data.consensus_g < 9].copy()
 model_data_viz.consensus_g.unique()
 
 # %%
-path = str(project_directory) + "/outputs/figures/"
-
-# %%
-plot_clusters2(model_data_viz, "consensus_g", file_path=path)
+plot_clusters2(model_data_viz, "consensus_g")
 plt.savefig("clusters.svg")
 
 # %%
@@ -1052,7 +822,7 @@ plt.show()
 
 # %%
 # create a workbook and store the resulting clusters in it. Each cluster in a separate worksheet.
-with xlsxwriter.Workbook(f"{project_directory}/inputs/data/clusters.xlsx") as workbook:
+with xlsxwriter.Workbook("clusters.xlsx") as workbook:
     for cluster in model_data.consensus_g.unique():
         community = model_data[model_data.consensus_g == cluster].comment.to_list()
         worksheet = workbook.add_worksheet()
