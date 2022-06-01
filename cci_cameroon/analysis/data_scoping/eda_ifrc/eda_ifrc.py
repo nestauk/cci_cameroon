@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import missingno as msno
 import seaborn as sns
 import re
+from textwrap import wrap
 
 # Set directory
 project_directory = cci_cameroon.PROJECT_DIR
@@ -124,6 +125,9 @@ percent_missing_df.index = [
 percent_missing_df.column_name = percent_missing_df.index
 
 # %%
+plt.clf()
+
+# %%
 percent_missing_df.plot(
     kind="barh", figsize=(15, 10), color=c("nesta_green"), fontsize=15
 )
@@ -168,12 +172,17 @@ percent_missing_df = percent_missing(ifrc_data)
 percent_missing_df.plot(kind="barh", figsize=(7, 5))
 plt.title("Percent missing in df - remaining columns")
 
+# %%
+from matplotlib import rcParams
+
+rcParams.update({"figure.autolayout": False})
+
 # %% [markdown]
 # No columns are identical in missing behaviour but category and code have a section of inputs that match in missingness.
 
 # %%
-plt.tight_layout()
-msno.matrix(ifrc_data, figsize=(15, 10))
+# plt.tight_layout()
+msno.matrix(ifrc_data, figsize=(15, 10), fontsize=12)
 plt.title("Distribution of missing values in each attribute", size=30)
 plt.savefig(f"{project_directory}/outputs/figures/svg/missing_values_by_attribute.svg")
 plt.savefig(f"{project_directory}/outputs/figures/png/missing_values_by_attribute.png")
@@ -385,10 +394,10 @@ ax.set_xlabel("Number of comments", fontsize=20)
 ax.set_ylabel("Count", fontsize=20)
 
 # %%
-ifrc_data.date.iloc[14390]
+ifrc_data.date.iloc[14390] = pd.to_datetime("2021-07-31 00:00:00")
 
 # %%
-ifrc_data.date
+ifrc_data.date.iloc[14390]
 
 # %%
 ifrc_data.date = pd.to_datetime(ifrc_data.date)
@@ -399,6 +408,34 @@ f1 = (
 )
 f1.axes.xaxis.set_ticklabels([])
 plt.title("Bar plot - count of values per code")
+
+# %%
+ifrc_data.columns
+
+# %%
+df = ifrc_data[ifrc_data["type of feedback"] == "Rumors_beliefs_observations"]
+df
+
+# %%
+data_df = ifrc_data.copy()
+
+# %%
+data_df["month"] = pd.to_datetime(data_df.date).dt.month
+data_df["year"] = pd.to_datetime(ifrc_data.date).dt.year
+data_df["month_year"] = pd.to_datetime(ifrc_data.date).dt.to_period("M")
+
+# %%
+df = (
+    data_df[data_df["type of feedback"] == "Rumors_beliefs_observations"]
+    .groupby(["month", "year"])
+    .size()
+    .reset_index(name="counts")
+)
+plt.figure(figsize=(15, 9))
+sns.lineplot(x="month", y="counts", hue="year", data=df)
+plt.title("Monthly count of comments for each year", size=25, pad=15)
+plt.xlabel("Month", size=15)
+plt.ylabel("Count", size=15)
 
 # %%
 ifrc_data["month_year"] = pd.to_datetime(ifrc_data.date).dt.to_period("M")
@@ -578,7 +615,7 @@ rumours_code = feedback_type_code[
 rumours_code.sort_values(by="count", inplace=True)
 
 # %%
-rumours_10 = rumours_code.tail(10)
+rumours_10 = rumours_code.tail(8)
 
 # %%
 fig, ax = plt.subplots(figsize=(7, 6), dpi=100)
@@ -751,5 +788,48 @@ plt.title("Language frequency for rumour_belief_observation feedback comments")
 #
 # ### To consider
 # - Are we thinking about all elements in the rumours_beliefs_observations field - even if its more of an opinion / comment rather than a rumour?
+
+# %%
+rum_bel_ob.groupby("code").size().sort_values(ascending=False).head(8)
+
+# %%
+codes = [
+    "Belief that some people/institutions are making money because of the disease",
+    "Belief that the outbreak has ended",
+    "Belief that disease does exist or is real",
+    "Belief that the disease does not exist in this region or country",
+    "Beliefs about hand washing or hand sanitizers",
+    "Beliefs about face masks",
+    "Beliefs about ways of transmission",
+    "Observations of non-compliance with health measures",
+]
+
+# %%
+plt.figure(figsize=(15, 9))
+rum_bel_ob[rum_bel_ob.code.isin(codes)].code.value_counts().plot(
+    kind="bar", color=c("nesta_green"), fontsize=15
+)
+plt.title("Comment distribution by code", size=25, pad=20)
+plt.ylabel("Count", size=15)
+plt.tight_layout()
+plt.savefig(f"{project_directory}/outputs/figures/svg/comment_counts_by_code.svg")
+plt.savefig(f"{project_directory}/outputs/figures/png/comment_counts_by_code.png")
+
+# %%
+lables = ["\n".join(wrap(l, 40)) for l in codes]
+lables
+
+# %%
+plt.clf()
+plt.figure(figsize=(15, 9))
+rum_bel_ob[rum_bel_ob.code.isin(codes)].code.value_counts().plot(
+    kind="barh", color=c("nesta_green"), fontsize=10
+)
+plt.title("Comment distribution by code", size=25, pad=20)
+plt.ylabel("Code", size=20)
+plt.xlabel("Count", size=20)
+plt.tight_layout()
+plt.savefig(f"{project_directory}/outputs/figures/png/comment_counts_by_code.png")
+plt.savefig(f"{project_directory}/outputs/figures/svg/comment_counts_by_code2.svg")
 
 # %%
