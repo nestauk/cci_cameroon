@@ -37,6 +37,18 @@ w2 = gd.workshop_2
 w1.head(1)
 
 # %%
+w1.shape
+
+# %%
+labelled_data = w1.append(w2, ignore_index=True)
+
+# %%
+w1.code.value_counts()
+
+# %%
+labelled_data.code.value_counts()[labelled_data.code.value_counts() < 10]
+
+# %%
 # Update to add to data getters
 ifrc_data = pd.read_excel(
     f"{project_directory}/inputs/data/COVID_19 Community feedback_Cameroon.xlsx",

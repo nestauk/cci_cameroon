@@ -1,101 +1,153 @@
-# Collective Crisis Intelligence Project for The Cameroon Red Cross
-
-# Contents
-
-- [Background](#background)
-- [Overview of the prototype](#overview-of-the-prototype)
-- [Model workflow](#model-workflow)
-  - [Data preprocessing](#data-preprocessing)
-  - [The classification model](#the-classification-model)
-  - [The clustering model](#the-clustering-model)
-- [Running the models](#running-the-models)
-  - [Steps to take before running the model](#steps-to-take-before-running-the-model)
-  - [Pre-trained models (classification)](<#pre-trained-models-(classification)>)
-  - [Input needed](#input-needed)
-  - [Run the models](#run-the-model)
-  - [Outputs](#outputs)
-- [Using the tool](#using-the-tool)
-
 <!-- #region -->
 
-# Background
+# Collective Crisis Intelligence Project for The Cameroon Red Cross
 
-The outbreak of COVID-19 witnessed an avalanche of rumours and misinformation as people around the world grappled with the disease. The Cameroon Red Cross (CRC) needed a way to both identify and address the rumours and misinformation that was arising on covid-19. With the help of the International Federation of the Red Cross (IFRC), the CRC have been collecting feedback from communities on covid-19 including rumours, beliefs and observations. So far the approach of collecting, coding and acting on these rumours has been manual, where members of the IFRC assign new rumours to codes and the CRC address new rumours with an appropriate response through different channels.
+**_Public repository for hosting the technical outputs of the CCI Cameroon project._**
 
-This project explores ways to use supervised and unsupervised machine learning methods to both classify rumours to existing codes and suggest new rumour groups for the CRC to address.
+## Welcome!
 
-# Overview of the prototype
+This repository contains the code and documentation for a project uses Collective Crisis Intellegence (CCI) with the aim to help the Cameroon Red Cross to track and respond to misinformation in realtime.
+
+### Background
+
+The scale and spread of misinformation and disinformation is a growing challenge for humanitarian organisations. The Cameroon Red Cross (CRC) needed a way to both identify and address the rumours and misinformation that was arising on Covid-19.
+
+The CRC collects community feedback, including rumours and beliefs about COVID-19, through a network of volunteers. After community feedback is collected, the CRC submits the full dataset to a data analyst based at the regional IFRC cluster team who cleans the data and assigns labels to different categories of rumours, beliefs and observations.
+
+The Collective Crisis Intelligence project for the Cameroon Red Cross aims at developing a prototype of an Artificial Intelligence system that can be used to classify comments in the context of covid-19. The aim of the tool is to both help volunteers in the field provide appropriate and timely responses to community members' comments and CRC staff to handle large groups of unknown rumours. Figure 1 summarises how the tool could be used.
+
+![How the tool is used](../outputs/figures/readme/tool_works.png)
+Figure 1: How the tool is used
 
 The prototype tool handles new rumours in two steps. First it tries to classify them to one of the existing eight codes using a predictive model. If the rumour does not fit one of these codes it is added to a pool of unmatched data points to be clustered into different groups. Figure 1 summarises the major steps of the prototype.
 
 ![Figure 1](../outputs/figures/readme/overall_system.png)
 
-Figure 1: System Components
+Figure 2: System Components
 
-<!-- #endregion -->
+The analysis provided in this repository generates two outputs:
 
-# Model workflow
+1. A classification model that classfies rumours into existing categories
+2. A clustering model that finds new groups of rumours from a pool of rumours that cannot be classified
 
-## Data preprocessing
+Find out more about the project in our report 'title of the report' [insert link].
 
-Obtained data on COVID-19 was preprocessed before use. The majority of the comments found in the dataset are in French. Comments found in other languages such as English were translated into French using the google translator library. Next we inspected the distribution of comments into the various codes present. Data points corresponding to 8 labels were retained for model development. Using workshop sessions conducted by CRC volunteers, data labeling exercise was conducted in which different groups did label the same data point thrice. Using a majority vote, data points which got the majority vote were retained. The pre-processed data is split into a train/test datasets and saved in the outputs/data directory. The script used in the data pre-processing is [data_splitting.py](https://github.com/nestauk/cci_cameroon/blob/10_model_pipeline/cci_cameroon/pipeline/data_splitting.py)
+## Contents
 
-## The classification model
+`Published on July xx, 2022`
 
-The cleaned data was split into train/test sets using the proportion 80:20. Different models and their hyperparameters were tested using a combination of gridsearch and k-fold cross validation on the training set. The best performing model was chosen by using the F1 micro metric. K-nearest neighbours classifier was found to have the best performance overall. Functional programming was used with sklearns pipeline to optimise the model tuning and development process.
+- [**Model workflow**](link): Python code for train the models and then running on the test set.
+- [**Classification model development**](link): Text.
+- [**Clustering model development**](link): Text.
 
-The steps taken to develop the classification model can be found in the file [classification_model_development.py](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/analysis/model_development).
+## Data
 
-As shown in the figure, once the comments are cleaned, they are fed into an instance of `french_semantic` transformer model which creates numerical representations (embeddings) of the data. The embeddings are used to train a K-neighbors classifier.
+To build the models we used community feedback data related to COVID-19 collected by the Cameroon Red Cross (CRC) with help from the International Federation of the Red Cross (IFRC). This dataset forms part of an ongoing collection of COVID-19 community data by the IFRC and regional RC societies. Each Red Cross society collects questions, feedback suggestions, rumours, beliefs and observations from community members across the country through different channels such as social media, focus groups and radio. This data is then sent to the IFRC to be processed which includes assigning observations to a code to represent its topic. More information on this data collection process can be found on the IFRC.Go platform. This dataset contains 6,702 observations which contain the rumour text as well as information about how the rumour was collected and its assigned code.
 
-New data points from the test set are then introduced into the model which tries to match each data point to an existing label. Where the probability of a data point belonging to a label is less than a threshold of 0.5, the data point is treated as unknown. These unclassified data points are then fed into the clustering algorithm which produces groups.
+#### Selecting data for modelling
 
-## The clustering model
+As a first step we manually inspected some of the comments assigned to each of the codes. We noticed a lot of variation in the quality of the codes and the number of comments assigned. Some of the codes were very broad such as ‘other beliefs about the disease’ and many only had a few comments assigned.
 
-The clustering model development is performed in a file named [clustering_model_development.py](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/analysis/model_development). The process followed by the clustering algorithm is summarized by the steps below:
+For this reason we decided to only select a small subset of the codes to use as output variables for our classification model. To select the codes we designed and ran an activity with CRC staff to prioritise the codes to be used in modelling. The chosen codes are listed below.
 
-- For each data point, using cosine similarity,the top 5 most similar data points are fetched from the dataset using FAISS flat index. The output of this step is a matrix where each entry is the cosine similarity score between two data points.
-- Using the cosine similarity score matrix, a graph network is constructed where the nodes are the individual data points. An edge occurs between two nodes A and B if node B is among the top 5 most similar nodes to A.
-- The resulting network is fed into a community detection algorithm. This produces clusters of comments as output.
+```
+codes = [
+    "Belief that some people/institutions are making money because of the disease",
+    "Belief that the outbreak has ended",
+    "Belief that disease does exist or is real",
+    "Belief that the disease does not exist in this region or country",
+    "Beliefs about hand washing or hand sanitizers",
+    "Beliefs about face masks",
+    "Beliefs about ways of transmission",
+    "Observations of non-compliance with health measures",
+]
+```
 
-# Running the models
+#### Cleaning the data using participatory methods
 
-The final scripts for the classification (`classification_model_run.py`) and clustering (`clustering_model_run.py`) models and are found in [pipeline directory](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/pipeline/model_run) in a folder called `model_run`. The scripts use the held out test dataset to first classify the rumours and then cluster the rumours that cannot be classified. Both scripts can be run separately and can use any new rumour datasets that are in the correct format (contain a comment field for predicting and clustering).
+In our initial inspection we identified a number of cases where rumours were assigned to the codes that did not reflect their meaning. To understand the extent of this issue and to attempt to mitigate it, we ran a series of workshops with CRC staff and volunteers that asked participants to review each rumour and make a judgement on whether the code assigned was correct. Each rumour was reviewed three times by different volunteers or Red Cross staff and the consensus vote was used to either keep or remove that rumour and code pairing.
 
-## Steps to take before running
+## Installation
 
-To run the models you will first need to setup the project by following the steps below:
+### Clone and set up the repo
 
-1. Clone the project and cd into `the cci_cameroon` directory
+1. To run the models you will first need to setup the project. Follow the below two steps to do this:
+
+```shell
+$ git clone https://github.com/nestauk/cci_cameroon
+$ cd cci_cameroon
+```
+
 2. Run the command `make install` to create the virtual environment and install dependencies
+
 3. Inside the project directory run `make inputs-pull` to access the data from S3 (for those with access to the Nesta S3 account)
-   To note the project is setup using the Nesta Cookiecutter (guidelines on the Nesta Cookiecutter [can be found here](https://nestauk.github.io/ds-cookiecutter/structure/)).
 
-## Pre-trained models (classification)
+To note the project is setup using the Nesta Cookiecutter (guidelines on the Nesta Cookiecutter can be [found here](https://nestauk.github.io/ds-cookiecutter/structure/)).
 
-The pre-trained classification model is saved to `outputs/model`. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called `classification_model_save.py`
+### Split the data
 
-The MultiLabelBinarizer model is used to access the classes to create the predictions dataset. This model is also created and saved to outputs by running `classification_model_save.py`.
+For modelling purposes we split the data into training and test sets. As input we used the cleaned files of comments and codes from the partipatory workshops (defined in 'Cleaning the data using participatory methods') and a sample of data from the original IFRC rumours, beliefs and observations dataset. For internal use these are saved in the projects S3 bucket. If you don't have access to these files you can skip this step.
 
-## Input needed
+```shell
+$ cd cci_cameroon/pipeline
+$ python3 data_splitting.py
+```
 
-After you setup the project you will need your test dataset. To build our models we used the dataset provided to us by the IFRC and Cameroon Red Cross containing rumours, beliefs and observations from community members (more information on the data source can be found on the IFRC.Go website). To run the scripts the data needs to be in the following format:
+##### Outputs
 
-Filename: `X_test.xlsx`
-Saved in `inputs/data/data_for_modelling/`
-id comment
-numeric rumour text
-The reason for having an ID column is so you can reference back the prediction files to the original test dataset (if needed for reporting results).
+The following files created from running the `data_splitting.py` file. These are saved in `inputs/data/data_for_modelling` and are listed below. The last two files are used to help the model improve its accuracy predicting 'no response' rather than one of the eight codes.
 
-## Run the models
+These form the training and test sets used for modelling.
+
+- `X_train.csv`
+- `X_test.csv`
+- `y_train.csv`
+- `y_test.csv`
+- `no_response_train.csv`
+- `no_response_test.csv`
+
+### Save and run the models
+
+#### Save the classification model
+
+Run the below python file to train and save the classification model. This requires the above training and test files in the format:
+
+- X_train, X_test, no_response_train, no_response_test: rumour_id (unique integer), rumour text (string)
+- y_train, y_test: rumour_id (unique integer), codes assigned (list of codes)
+
+```shell
+$ cd cci_cameroon/pipeline
+$ python3 classification_model_save.py
+```
+
+##### Outputs
+
+The pre-trained classification model is saved to `outputs/model`. This model is fitted using the same IFRC dataset that the test set came from. The MultiLabelBinarizer model (mlb) is used to access the classes to create the predictions dataset. This model is also created and saved to `outputs/model`.
+
+- `final_classification_model.sav`
+- `mlb.pkl`
+
+#### Run the models
+
+Move into the `model_workflow` folder and run the following file to run the models.
 
 Perform the following steps to run the models:
 
-1. cd into `pipeline/model_run`
-2. run `python3 classification_model_run.py`
-3. run `python3 clustering_model_run.py`
+```shell
+$ cd into pipeline/model_workflow
+$ python3 classification_model_run.py
+$ python3 clustering_model_run.py
+```
 
-## Outputs
+We have found that running this file on a mac system can sometimes encounter errors. If you experience this you can run a version of this file on google colab. The version that can be run on google colab can be found in`analysis/model_development` called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run). You may want to convert the .py file to a jupyter notebook before uploading.
+
+```shell
+$ cd cci_nepal/pipeline/model_workflow
+$ python3 model_save.py
+$ python3 model_test.py
+```
+
+### Final Outputs
 
 There are three files created from running the models and saved to outputs:
 
@@ -109,9 +161,32 @@ The `not_classified.xlsx` file is used as input to run the clustering algorthm i
 
 The `clusters.xlsx` file contains the unclassified comments broken into the clusters chosen by the clustering model. Each cluster in saved as a seperate sheet in the excel file.
 
-# Using the tool
+## Directory structure
 
-The Collective Crisis Intelligence project for the Cameroon Red Cross aims at developing a prototype of an Artificial Intelligence system that can be used to classify comments in the context of covid-19. The aim of the tool is to both help volunteers in the field provide appropriate and timely responses to community members' comments and CRC staff to handle large groups of unknown rumours. Figure 1 summarises how the tool could be used.
+The repository has the following main directories:
 
-![How the tool is used](../outputs/figures/readme/tool_works.png)
-Figure 2: How the tool is used
+```
+  ├── cci_cameroon                          <- Packaged code (various modules, utilities and readme)
+  │   ├── analysis
+  │   │   ├── classification_model_dev      <- Model tuning on the training set to find optimum models and parameters
+  │   │   ├── clustering_model_dev          <- Testing and development of clustering model
+  │   │   ├── data_scoping                  <- Exploratory data analysis of various datasets
+  │   │   ...
+  │   ├── config                            <- Holds variables, feature names and parameters used in the codebase
+  │   ├── getters                           <- Functions for getting the data
+  │   ├── pipeline                          <- Holds scripts for all pipeline components
+  │   │   └── model_workflow                <- Runs models on test data
+  │   ├── utils                             <- Utility functions needed across different parts of the codebase
+  │   ...
+  ├── inputs
+  │   └── data                              <- Holds original survey data (or dummy data)
+  │   ...
+  └── outputs
+      ├── data
+      │   └── data_for_modelling      <- Training and test sets saved here
+      ├── models                      <- Saved models after running model_workflow
+      ...
+
+```
+
+<!-- #endregion -->

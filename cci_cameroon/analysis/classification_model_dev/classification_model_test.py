@@ -228,14 +228,14 @@ print("SVM: " + str(f1_score(y_test, y_pred_svm, average="macro")))
 # Comparison of train and test f1 scores
 data = {
     "Models": ["KNN", "Random Forest", "Decision Tree", "Gaussian Naive Bayes", "SVM"],
-    "F1 train": [
+    "f1 train": [
         0.8254718922034187,
         0.6435466340825209,
         0.5930789490687917,
         0.7349059625159102,
         0.8462465464030492,
     ],
-    "F1 test": [
+    "f1 test": [
         0.8356435643564355,
         0.7000000000000002,
         0.6272189349112426,
@@ -295,17 +295,26 @@ ax = sns.catplot(
 )
 plt.xticks(rotation=90)
 
-sns.move_legend(ax, "upper left", bbox_to_anchor=(0.8, 0.8))
+sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 0.8))
 
 plt.setp(ax._legend.get_texts(), fontsize=14)
 plt.setp(ax._legend.get_title(), fontsize=14)
 
+plt.tight_layout()
 
 # modify individual font size of elements
 plt.xlabel("Models", fontsize=16, labelpad=20)
-plt.ylabel("Micro F1 score", fontsize=16)
-plt.title("Training and test set F1 scores", fontsize=20, y=1.05)
+plt.ylabel("Micro f1 score", fontsize=16)
+plt.title("Training and test set f1 scores", fontsize=20, y=1.05)
 plt.tick_params(axis="both", which="major", labelsize=14)
+
+ax.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/png/training_test_f1.png"
+)
+ax.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/svg/training_test_f1.svg",
+    format="svg",
+)
 
 # %%
 f1_scores_labels = list(f1_score(y_test, y_pred_svm, average=None))
@@ -334,14 +343,27 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 # %%
-plt.figure(figsize=(8, 6))
+df.head(1)
+
+# %%
+plt.figure(figsize=(10, 6))
 ax = sns.barplot(x="F1 scores", y=labels, data=df, color="#0000FF")
 
-plt.xlabel("F1 scores", fontsize=16)
+plt.xlabel("f1 scores", fontsize=16)
 plt.ylabel("", fontsize=1)
 
-plt.title("F1 Scores per code", fontsize=20, y=1.05)
+plt.title("f1 scores per code", fontsize=20, y=1.05)
 plt.tick_params(axis="both", which="major", labelsize=14)
+
+plt.tight_layout()
+
+ax.figure.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/png/f1_scores_code.png"
+)
+ax.figure.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/svg/f1_scores_code.svg",
+    format="svg",
+)
 
 # %%
 # Get predictions lists
@@ -350,13 +372,16 @@ y_test_vals = mlb.inverse_transform(y_test)
 
 # %%
 # Comparison of train and test f1 scores
-data = {"preds": preds, "actual": y_test_vals}
+data = {"comments": X_test, "preds": preds, "actual": y_test_vals}
 
 # Creates pandas DataFrame.
 df = pd.DataFrame(data)
 
 # %%
 df.actual.value_counts()
+
+# %%
+pd.set_option("display.max_colwidth", None)
 
 # %%
 df[df.actual == ("Croyance_que_la_maladie_existe_ou_est_réelle",)]
@@ -427,6 +452,9 @@ acc_workshop_file1 = pd.read_excel(
 )
 
 # %%
+acc_workshop_file1.head(1)
+
+# %%
 acc_workshop_file1["category_id"] = acc_workshop_file1["code"].str.replace(" ", "_")
 
 # %%
@@ -437,6 +465,9 @@ acc_workshop_file = (
     .reset_index()
 )
 y_test_workp_acc = mlb.transform(acc_workshop_file["category_id"])
+
+# %%
+acc_workshop_file1.head(1)
 
 # %%
 acc_workshop_file.shape
@@ -470,15 +501,15 @@ f1_scores_labels_crc
 # Comparison of train and test f1 scores
 data = {
     "Codes": list(codes),
-    "F1 CRC": f1_scores_labels_crc,
-    "F1 test": f1_scores_labels,
+    "f1 CRC": f1_scores_labels_crc,
+    "f1 test": f1_scores_labels,
 }
 
 # Creates pandas DataFrame.
 df = pd.DataFrame(data)
 df["Codes"].replace("_", " ", inplace=True, regex=True)
 
-df.sort_values(by="F1 CRC", ascending=False, inplace=True)
+df.sort_values(by="f1 CRC", ascending=False, inplace=True)
 
 # %%
 f1_scores_df = pd.melt(df, id_vars="Codes", var_name="Red Cross", value_name="F1 Score")
@@ -512,16 +543,27 @@ plt.setp(ax._legend.get_title(), fontsize=14)
 
 
 # modify individual font size of elements
-plt.xlabel("Micro F1 score", fontsize=16, labelpad=20)
+plt.xlabel("Micro f1 score", fontsize=16, labelpad=20)
 plt.ylabel("Codes", fontsize=16)
-plt.title("CRC new data and test set F1 scores", fontsize=20, y=1.05)
+plt.title("CRC new data and test set f1 scores", fontsize=20, y=1.05)
 plt.tick_params(axis="both", which="major", labelsize=14)
 
 plt.show()
 
+ax.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/png/f1_crc.png"
+)
+ax.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/svg/f1_crc.svg",
+    format="svg",
+)
+
 # %%
 from matplotlib import pyplot as plt
 import seaborn as sns
+
+# %%
+df.head(1)
 
 # %%
 plt.figure(figsize=(8, 6))

@@ -188,15 +188,15 @@ f1_scores_labels_drc
 # Comparison of train and test f1 scores
 data = {
     "Codes": list(codes),
-    "F1 DRC": f1_scores_labels_drc,
-    "F1 test": f1_scores_labels,
+    "f1 DRC": f1_scores_labels_drc,
+    "f1 test": f1_scores_labels,
 }
 
 # Creates pandas DataFrame.
 df = pd.DataFrame(data)
 df["Codes"].replace("_", " ", inplace=True, regex=True)
 
-df.sort_values(by="F1 DRC", ascending=False, inplace=True)
+df.sort_values(by="f1 DRC", ascending=False, inplace=True)
 
 # %%
 f1_scores_df = pd.melt(df, id_vars="Codes", var_name="Red Cross", value_name="F1 Score")
@@ -254,13 +254,22 @@ sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 0.8))
 plt.setp(ax._legend.get_texts(), fontsize=14)
 plt.setp(ax._legend.get_title(), fontsize=14)
 
+plt.tight_layout()
 
 # modify individual font size of elements
-plt.xlabel("Micro F1 score", fontsize=16, labelpad=20)
+plt.xlabel("Micro f1 score", fontsize=16, labelpad=20)
 plt.ylabel("Codes", fontsize=16)
-plt.title("DRC data and test set F1 scores", fontsize=20, y=1.05)
+plt.title("DRC data and test set f1 scores", fontsize=20, y=1.05)
 plt.tick_params(axis="both", which="major", labelsize=14)
 
 plt.show()
+
+ax.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/png/drc_f1.png"
+)
+ax.savefig(
+    f"{project_directory}/outputs/figures/predictive_models/results/svg/drc_f1.svg",
+    format="svg",
+)
 
 # %%
