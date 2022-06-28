@@ -134,18 +134,13 @@ Move into the `model_workflow` folder and run the following file to run the mode
 Perform the following steps to run the models:
 
 ```shell
-$ cd into pipeline/model_workflow
+$ cd into cci_cameroon/pipeline/model_workflow
 $ python3 classification_model_run.py
-$ python3 clustering_model_run.py
+$ python3 clustering_model_run.py*
 ```
 
-We have found that running this file on a mac system can sometimes encounter errors. If you experience this you can run a version of this file on google colab. The version that can be run on google colab can be found in`analysis/model_development` called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run). You may want to convert the .py file to a jupyter notebook before uploading.
+*We have found that running this file on a mac system can sometimes encounter errors. If you experience this you can run a version of this file on google colab. The version that can be run on google colab is saved in the same folder called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run). You may want to convert the .py file to a jupyter notebook before uploading.
 
-```shell
-$ cd cci_nepal/pipeline/model_workflow
-$ python3 model_save.py
-$ python3 model_test.py
-```
 
 ### Final Outputs
 
