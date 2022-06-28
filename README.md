@@ -16,12 +16,12 @@ The CRC collects community feedback, including rumours and beliefs about COVID-1
 
 The Collective Crisis Intelligence project for the Cameroon Red Cross aims at developing a prototype of an Artificial Intelligence system that can be used to classify comments in the context of covid-19. The aim of the tool is to both help volunteers in the field provide appropriate and timely responses to community members' comments and CRC staff to handle large groups of unknown rumours. Figure 1 summarises how the tool could be used.
 
-![How the tool is used](../outputs/figures/readme/tool_works.png)
+![How the tool is used](outputs/figures/readme/tool_works.png)
 Figure 1: How the tool is used
 
 The prototype tool handles new rumours in two steps. First it tries to classify them to one of the existing eight codes using a predictive model. If the rumour does not fit one of these codes it is added to a pool of unmatched data points to be clustered into different groups. Figure 1 summarises the major steps of the prototype.
 
-![Figure 1](../outputs/figures/readme/overall_system.png)
+![Figure 1](outputs/figures/readme/overall_system.png)
 
 Figure 2: System Components
 
