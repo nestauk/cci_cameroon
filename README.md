@@ -36,9 +36,9 @@ Find out more about the project in our report 'title of the report' [insert link
 
 `Published on July xx, 2022`
 
-- [**Model workflow**](link): Python code for train the models and then running on the test set.
-- [**Classification model development**](link): Text.
-- [**Clustering model development**](link): Text.
+- [**Model workflow**](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/pipeline/model_workflow): Python code for train the models and then running on the test set.
+- [**Classification model development**](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/analysis/classification_model_dev): Classification models tuning on the training set to find optimum models and parameters.
+- [**Clustering model development**](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/analysis/clustering_model_dev): Testing of different clustering methods and parameters to develop an optimum model.
 
 ## Data
 
@@ -179,12 +179,12 @@ The repository has the following main directories:
   │   ├── utils                             <- Utility functions needed across different parts of the codebase
   │   ...
   ├── inputs
-  │   └── data                              <- Holds original survey data (or dummy data)
+  │   └── data                              <- Holds the IFRC data and outputs from the workshops
   │   ...
   └── outputs
       ├── data
-      │   └── data_for_modelling      <- Training and test sets saved here
-      ├── models                      <- Saved models after running model_workflow
+      │   └── data_for_modelling            <- Training and test sets saved here
+      ├── models                            <- Saved models after running model_workflow
       ...
 
 ```
