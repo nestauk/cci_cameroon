@@ -6,8 +6,7 @@ In this document, an overview of the tuning done to improve the performance of t
 
 ## Model tuning
 
-This is done in the file model_tuning.py with helper functions found in the files process_workshop_data.py and
-model_tuning_report.py. Using the train/test datasets, four different models are trained and tested. The models used are Random Forest Classifier, Decision Tree Classifier, Support Vector Classifier, K-Neighbors Classifier
+This is done in `model_tuning.py` with helper functions found in the files `process_workshop_data.py` and `model_tuning_report.py`. Using the train/test datasets, four different models are trained and tested. The models used are Random Forest Classifier, Decision Tree Classifier, Support Vector Classifier, K-Neighbors Classifier
 
 ## Final output
 

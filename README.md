@@ -6,7 +6,7 @@
 
 ## Welcome!
 
-This repository contains the code and documentation for a project uses Collective Crisis Intellegence (CCI) with the aim to help the Cameroon Red Cross to track and respond to misinformation in realtime.
+This repository contains the code and documentation for a project that uses Collective Crisis Intellegence (CCI) with the aim to help the Cameroon Red Cross to track and respond to misinformation in real time.
 
 ### Background
 
@@ -36,7 +36,7 @@ Find out more about the project in our report 'title of the report' [insert link
 
 `Published on July xx, 2022`
 
-- [**Model workflow**](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/pipeline/model_workflow): Python code for train the models and then running on the test set.
+- [**Model workflow**](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/pipeline/model_workflow): Python code for training the models and applying to the test data.
 - [**Classification model development**](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/analysis/classification_model_dev): Classification models tuning on the training set to find optimum models and parameters.
 - [**Clustering model development**](https://github.com/nestauk/cci_cameroon/tree/10_model_pipeline/cci_cameroon/analysis/clustering_model_dev): Testing of different clustering methods and parameters to develop an optimum model.
 
@@ -48,7 +48,7 @@ To build the models we used community feedback data related to COVID-19 collecte
 
 As a first step we manually inspected some of the comments assigned to each of the codes. We noticed a lot of variation in the quality of the codes and the number of comments assigned. Some of the codes were very broad such as ‘other beliefs about the disease’ and many only had a few comments assigned.
 
-For this reason we decided to only select a small subset of the codes to use as output variables for our classification model. To select the codes we designed and ran an activity with CRC staff to prioritise the codes to be used in modelling. The chosen codes are listed below.
+For this reason we decided to only select a small subset of the codes to use as target variables for our classification model. To select the codes we designed and ran an activity with CRC staff to prioritise the codes to be used in modelling. The chosen codes are listed below.
 
 ```
 codes = [
@@ -89,8 +89,7 @@ To note the project is setup using the Nesta Cookiecutter (guidelines on the Nes
 For modelling purposes we split the data into training and test sets. As input we used the cleaned files of comments and codes from the partipatory workshops (defined in 'Cleaning the data using participatory methods') and a sample of data from the original IFRC rumours, beliefs and observations dataset. For internal use these are saved in the projects S3 bucket. If you don't have access to these files you can skip this step.
 
 ```shell
-$ cd cci_cameroon/pipeline
-$ python3 data_splitting.py
+python cci_cameroon/pipeline/data_splitting.py
 ```
 
 ##### Outputs
@@ -116,16 +115,12 @@ Run the below python file to train and save the classification model. This requi
 - y_train, y_test: rumour_id (unique integer), codes assigned (list of codes)
 
 ```shell
-$ cd cci_cameroon/pipeline
-$ python3 classification_model_save.py
+python cci_cameroon/pipeline/classification_model_save.py
 ```
 
 ##### Outputs
 
-The pre-trained classification model is saved to `outputs/model`. This model is fitted using the same IFRC dataset that the test set came from. The MultiLabelBinarizer model (mlb) is used to access the classes to create the predictions dataset. This model is also created and saved to `outputs/model`.
-
-- `final_classification_model.sav`
-- `mlb.pkl`
+The pre-trained classification model is saved to `outputs/model/final_classification_model.sav`. This model is fitted using the same IFRC dataset that the test set came from. The MultiLabelBinarizer model (mlb) is used to access the classes to create the predictions dataset. This model is also created and saved to `outputs/model/mlb.pkl`.
 
 #### Run the models
 
@@ -139,7 +134,7 @@ $ python3 classification_model_run.py
 $ python3 clustering_model_run.py*
 ```
 
-*We have found that running this file on a mac system can sometimes encounter errors. If you experience this you can run a version of this file on google colab. The version that can be run on google colab is saved in the same folder called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run). You may want to convert the .py file to a jupyter notebook before uploading.
+*We have found that running this file on a Mac can sometimes encounter errors. If you experience this you can run a version of this file on Google Colab. The version that can be run on Google Colab is saved in the same folder and is called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run).
 
 
 ### Final Outputs

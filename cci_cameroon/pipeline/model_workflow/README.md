@@ -1,7 +1,5 @@
 # Running the models
 
-<br>
-<br>
 The x2 scripts in this folder can be used to run the classification and clustering models on new rumours (defaulted to the test set). The scripts use the held out test dataset to first classfiy the rumours and then cluster the rumours that cannot be classified. Both scripts can be run seperately and can use any new rumour datasets that are in the correct format (contain a comment field for predicting and clustering).
 
 ### Steps to take before running
@@ -16,7 +14,7 @@ To note the project is setup using the Nesta Cookiecutter (guidelines on the Nes
 
 #### Pre-trained models (classification)
 
-The pre-trained classification model is saved to outputs/model. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called 'classification_model_save\*.'
+The pre-trained classification model is saved to `outputs/model`. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called `classification_model_save`\*.
 
 The MultiLabelBinarizer model is used to access the classes to create the predictions dataset. This model is also created and saved to outputs by running `classification_model_save.py`.
 
@@ -33,14 +31,14 @@ After you setup the project you will need your test dataset. To build our models
 | ------- | ----------- |
 | numeric | rumour text |
 
-The reason for having an ID column is so you can reference back the prediction files to the original test dataset (if needed for reporting results).
+The reason for having an ID column is so you can reference the prediction files back to the original test dataset (if needed for reporting results).
 
 ### Run the models
 
 Perform the following steps to run the models:
 
-- run `python3 classification_model_run.py`
-- run `python3 clustering_model_run.py`
+- run `python classification_model_run.py`
+- run `python clustering_model_run.py`
 
 ### Outputs
 
