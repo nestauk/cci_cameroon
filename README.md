@@ -89,8 +89,7 @@ To note the project is setup using the Nesta Cookiecutter (guidelines on the Nes
 For modelling purposes we split the data into training and test sets. As input we used the cleaned files of comments and codes from the partipatory workshops (defined in 'Cleaning the data using participatory methods') and a sample of data from the original IFRC rumours, beliefs and observations dataset. For internal use these are saved in the projects S3 bucket. If you don't have access to these files you can skip this step.
 
 ```shell
-$ cd cci_cameroon/pipeline
-$ python3 data_splitting.py
+python cci_cameroon/pipeline/data_splitting.py
 ```
 
 ##### Outputs
