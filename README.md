@@ -12,7 +12,7 @@ This repository contains the code and documentation for a project that uses Coll
 
 The scale and spread of misinformation and disinformation is a growing challenge for humanitarian organisations. The Cameroon Red Cross (CRC) needed a way to both identify and address the rumours and misinformation that was arising on Covid-19.
 
-The CRC collects community feedback, including rumours and beliefs about COVID-19, through a network of volunteers. After community feedback is collected, the CRC submits the full dataset to a data analyst based at the regional IFRC cluster team who cleans the data and assigns labels to different categories of rumours, beliefs and observations.
+The CRC collects community feedback, including rumours and beliefs about COVID-19, through a network of volunteers. After community feedback is collected, the CRC submits the full dataset to a data analyst based at the regional International Federation of the Red Cross (IFRC) cluster team who cleans the data and assigns labels to different categories of rumours, beliefs and observations.
 
 The Collective Crisis Intelligence project for the Cameroon Red Cross aims at developing a prototype of an Artificial Intelligence system that can be used to classify comments in the context of covid-19. The aim of the tool is to both help volunteers in the field provide appropriate and timely responses to community members' comments and CRC staff to handle large groups of unknown rumours. Figure 1 summarises how the tool could be used.
 
@@ -42,7 +42,7 @@ Find out more about the project in our report 'title of the report' [insert link
 
 ## Data
 
-To build the models we used community feedback data related to COVID-19 collected by the Cameroon Red Cross (CRC) with help from the International Federation of the Red Cross (IFRC). This dataset forms part of an ongoing collection of COVID-19 community data by the IFRC and regional RC societies. Each Red Cross society collects questions, feedback suggestions, rumours, beliefs and observations from community members across the country through different channels such as social media, focus groups and radio. This data is then sent to the IFRC to be processed which includes assigning observations to a code to represent its topic. More information on this data collection process can be found on the IFRC.Go platform. This dataset contains 6,702 observations which contain the rumour text as well as information about how the rumour was collected and its assigned code.
+To build the models we used community feedback data related to COVID-19 collected by the CRC with help from the IFRC. This dataset forms part of an ongoing collection of COVID-19 community data by the IFRC and regional RC societies. Each Red Cross society collects questions, feedback suggestions, rumours, beliefs and observations from community members across the country through different channels such as social media, focus groups and radio. This data is then sent to the IFRC to be processed which includes assigning observations to a code to represent its topic. More information on this data collection process can be found on the [IFRC.Go platform](https://go.ifrc.org/emergencies/4583#community-data). This dataset contains 6,702 observations which contain the rumour text as well as information about how the rumour was collected and its assigned code.
 
 #### Selecting data for modelling
 
@@ -129,9 +129,8 @@ Move into the `model_workflow` folder and run the following file to run the mode
 Perform the following steps to run the models:
 
 ```shell
-$ cd into cci_cameroon/pipeline/model_workflow
-$ python3 classification_model_run.py
-$ python3 clustering_model_run.py*
+$ python cci_cameroon/pipeline/model_workflow/classification_model_run.py
+$ python cci_cameroon/pipeline/model_workflow/clustering_model_run.py*
 ```
 
 *We have found that running this file on a Mac can sometimes encounter errors. If you experience this you can run a version of this file on Google Colab. The version that can be run on Google Colab is saved in the same folder and is called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run).
