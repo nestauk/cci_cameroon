@@ -48,7 +48,7 @@ To build the models we used community feedback data related to COVID-19 collecte
 
 As a first step we manually inspected some of the comments assigned to each of the codes. We noticed a lot of variation in the quality of the codes and the number of comments assigned. Some of the codes were very broad such as ‘other beliefs about the disease’ and many only had a few comments assigned.
 
-For this reason we decided to only select a small subset of the codes to use as output variables for our classification model. To select the codes we designed and ran an activity with CRC staff to prioritise the codes to be used in modelling. The chosen codes are listed below.
+For this reason we decided to only select a small subset of the codes to use as target variables for our classification model. To select the codes we designed and ran an activity with CRC staff to prioritise the codes to be used in modelling. The chosen codes are listed below.
 
 ```
 codes = [
