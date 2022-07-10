@@ -1,13 +1,9 @@
-# Tuning of classification models
+# Classification model developement
 
-## Introduction
+This folder holds the notebooks used to develop the classification model used in `pipeline/model_workflow.` The notebooks in this directory aren't part of the codebase to run, but are here for for anyone interested in how the models were developed.
 
-In this document, an overview of the tuning done to improve the performance of the classification models is done. Using two different transformer models, different encodings are produced and fed into the classification models. Grid search is used to tune the parameters of the models and the best performed model is chosen. The cleaned data is used to train and test models' performance.
-
-## Model tuning
-
-This is done in `model_tuning.py` with helper functions found in the files `process_workshop_data.py` and `model_tuning_report.py`. Using the train/test datasets, four different models are trained and tested. The models used are Random Forest Classifier, Decision Tree Classifier, Support Vector Classifier, K-Neighbors Classifier
-
-## Final output
-
-The final output of the tuning process is the best model which is KNN classifier. It is later used to classify other data points.
+### Notebooks
+- `classification_model_development.py`: This notebook contains the code to train and different classification models and parameters using grid-search.
+- `classification_model_test.py`: This notebook contains the code to test the results of the models on the held out test set.
+- `model_test_drc_dataset.py`: This notebook contains the code to test the model on the DRC test dataset.
+- `model_threshold_setting.py`: This notebook contains the code to test the results of model on different thresholds as well as to perform the bias audit.
