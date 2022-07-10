@@ -120,10 +120,7 @@ python cci_cameroon/pipeline/classification_model_save.py
 
 ##### Outputs
 
-The pre-trained classification model is saved to `outputs/model`. This model is fitted using the same IFRC dataset that the test set came from. The MultiLabelBinarizer model (mlb) is used to access the classes to create the predictions dataset. This model is also created and saved to `outputs/model`.
-
-- `final_classification_model.sav`
-- `mlb.pkl`
+The pre-trained classification model is saved to `outputs/model/final_classification_model.sav`. This model is fitted using the same IFRC dataset that the test set came from. The MultiLabelBinarizer model (mlb) is used to access the classes to create the predictions dataset. This model is also created and saved to `outputs/model/mlb.pkl`.
 
 #### Run the models
 
