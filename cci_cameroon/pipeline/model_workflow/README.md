@@ -37,8 +37,8 @@ The reason for having an ID column is so you can reference back the prediction f
 
 Perform the following steps to run the models:
 
-- run `python3 classification_model_run.py`
-- run `python3 clustering_model_run.py`
+- run `python classification_model_run.py`
+- run `python clustering_model_run.py`
 
 ### Outputs
 
