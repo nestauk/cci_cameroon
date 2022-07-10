@@ -25,12 +25,12 @@ The prototype tool handles new rumours in two steps. First it tries to classify 
 
 Figure 2: System Components
 
-The analysis provided in this repository generates two outputs:
+The pipelines provided in this repository generates two outputs:
 
 1. A classification model that classfies rumours into existing categories
 2. A clustering model that finds new groups of rumours from a pool of rumours that cannot be classified
 
-Find out more about the project in our report 'title of the report' [insert link].
+Find out more about the project in our report (coming soon).
 
 ## Contents
 
@@ -71,16 +71,24 @@ In our initial inspection we identified a number of cases where rumours were ass
 
 ### Clone and set up the repo
 
-1. To run the models you will first need to setup the project. Follow the below two steps to do this:
+To run the models you will first need to setup the project. Follow the steps below to do this:
 
+1. Meet the data science cookiecutter [requirements](http://nestauk.github.io/ds-cookiecutter/quickstart), in brief:
+  - Install: `git-crypt` and `conda`
+  - Have a Nesta AWS account configured with `awscli`
+
+2. Run:
 ```shell
 $ git clone https://github.com/nestauk/cci_cameroon
 $ cd cci_cameroon
 ```
 
-2. Run the command `make install` to create the virtual environment and install dependencies
+3. Run `make install` to configure the development environment:
+  - Setup the conda environment
+  - Configure pre-commit
+  - Configure metaflow to use AWS
 
-3. Inside the project directory run `make inputs-pull` to access the data from S3 (for those with access to the Nesta S3 account)
+4. Inside the project directory run `make inputs-pull` to access the data from S3 (for those with access to the Nesta S3 account)
 
 To note the project is setup using the Nesta Cookiecutter (guidelines on the Nesta Cookiecutter can be [found here](https://nestauk.github.io/ds-cookiecutter/structure/)).
 
