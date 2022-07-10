@@ -41,7 +41,7 @@ import matplotlib.pyplot as plt
 import pickle
 from sklearn.metrics import precision_recall_fscore_support
 import seaborn as sns
-from textwrap import wrap
+from textwrap3 import wrap
 
 # Project modules
 import cci_cameroon

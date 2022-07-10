@@ -24,7 +24,7 @@ sentence_transformers
 sklearn
 stop_words
 langdetect
-textwrap
+textwrap3
 umap-learn
 cairocffi
 leidenalg

@@ -25,7 +25,7 @@ import os
 from ast import literal_eval
 import pickle
 import os.path
-from textwrap import wrap
+from textwrap3 import wrap
 
 # Project modules
 import cci_cameroon
