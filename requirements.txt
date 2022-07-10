@@ -9,9 +9,3 @@ tqdm
 filelock
 typer
 sh
-sentence-transformers
-sentencepiece
-omegaconf
-tensorflow
-torch
-faiss-cpu
