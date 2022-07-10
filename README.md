@@ -6,7 +6,7 @@
 
 ## Welcome!
 
-This repository contains the code and documentation for a project that uses Collective Crisis Intellegence (CCI) with the aim to help the Cameroon Red Cross to track and respond to misinformation in real time.
+This repository contains the code and documentation for a project that uses Collective Crisis Intellegence (CCI) with the aim of helping the Cameroon Red Cross to track and respond to misinformation in realtime.
 
 ### Background
 
@@ -14,12 +14,12 @@ The scale and spread of misinformation and disinformation is a growing challenge
 
 The CRC collects community feedback, including rumours and beliefs about COVID-19, through a network of volunteers. After community feedback is collected, the CRC submits the full dataset to a data analyst based at the regional International Federation of the Red Cross (IFRC) cluster team who cleans the data and assigns labels to different categories of rumours, beliefs and observations.
 
-The Collective Crisis Intelligence project for the Cameroon Red Cross aims at developing a prototype of an Artificial Intelligence system that can be used to classify comments in the context of covid-19. The aim of the tool is to both help volunteers in the field provide appropriate and timely responses to community members' comments and CRC staff to handle large groups of unknown rumours. Figure 1 summarises how the tool could be used.
+The Collective Crisis Intelligence project for the Cameroon Red Cross aims at developing a prototype of an Artificial Intelligence system that can handle new rumours by either matching them to existing rumour categories or grouping them into new ones. The aim of the tool is to both help volunteers in the field provide appropriate and timely responses to community members' comments and CRC staff to handle large groups of unknown rumours. Figure 1 summarises how the tool could be used.
 
 ![How the tool is used](outputs/figures/readme/tool_works.png)
 Figure 1: How the tool is used
 
-The prototype tool handles new rumours in two steps. First it tries to classify them to one of the existing eight codes using a predictive model. If the rumour does not fit one of these codes it is added to a pool of unmatched data points to be clustered into different groups. Figure 1 summarises the major steps of the prototype.
+The prototype tool handles new rumours in two steps. First it tries to classify them to a set of known categories (codes) using a predictive model. If the rumour does not fit one of these codes it is added to a pool of unmatched data points to be clustered into different groups. Figure 1 summarises the major steps of the prototype.
 
 ![Figure 1](outputs/figures/readme/overall_system.png)
 
