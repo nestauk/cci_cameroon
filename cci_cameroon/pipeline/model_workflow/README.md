@@ -1,6 +1,6 @@
 # Running the models
 
-The x2 scripts in this folder can be used to run the classification and clustering models on new rumours (defaulted to the test set). The scripts use the held out test dataset to first classfiy the rumours and then cluster the rumours that cannot be classified. Both scripts can be run seperately and can use any new rumour datasets that are in the correct format (contain a comment field for predicting and clustering).
+The scripts in this folder can be used to run the classification and clustering models on new rumours (in this case, represented by the test data). They first classfiy the rumours and then cluster the ones that cannot be classified. Both scripts can be run seperately and can use any new rumour datasets that are in the correct format (are in `xlsx` format and contain a comment field for predicting and clustering).
 
 ### Steps to take before running
 
