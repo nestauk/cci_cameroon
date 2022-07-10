@@ -31,7 +31,7 @@ After you setup the project you will need your test dataset. To build our models
 | ------- | ----------- |
 | numeric | rumour text |
 
-The reason for having an ID column is so you can reference back the prediction files to the original test dataset (if needed for reporting results).
+The reason for having an ID column is so you can reference the prediction files back to the original test dataset (if needed for reporting results).
 
 ### Run the models
 
