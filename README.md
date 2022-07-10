@@ -115,8 +115,7 @@ Run the below python file to train and save the classification model. This requi
 - y_train, y_test: rumour_id (unique integer), codes assigned (list of codes)
 
 ```shell
-$ cd cci_cameroon/pipeline
-$ python3 classification_model_save.py
+python cci_cameroon/pipeline/classification_model_save.py
 ```
 
 ##### Outputs
