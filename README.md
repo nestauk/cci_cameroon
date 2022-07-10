@@ -6,7 +6,7 @@
 
 ## Welcome!
 
-This repository contains the code and documentation for a project uses Collective Crisis Intellegence (CCI) with the aim to help the Cameroon Red Cross to track and respond to misinformation in realtime.
+This repository contains the code and documentation for a project that uses Collective Crisis Intellegence (CCI) with the aim to help the Cameroon Red Cross to track and respond to misinformation in real time.
 
 ### Background
 
