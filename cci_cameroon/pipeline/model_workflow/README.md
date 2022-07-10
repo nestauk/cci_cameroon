@@ -14,7 +14,7 @@ To note the project is setup using the Nesta Cookiecutter (guidelines on the Nes
 
 #### Pre-trained models (classification)
 
-The pre-trained classification model is saved to outputs/model. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called 'classification_model_save\*.'
+The pre-trained classification model is saved to `outputs/model`. This model is fitted using the same IFRC dataset that the test set came from. The script to run the file is in the pipeline folder and is called `classification_model_save`\*.
 
 The MultiLabelBinarizer model is used to access the classes to create the predictions dataset. This model is also created and saved to outputs by running `classification_model_save.py`.
 
