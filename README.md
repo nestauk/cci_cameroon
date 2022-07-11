@@ -10,7 +10,7 @@ This repository contains the code and documentation for a project that uses Coll
 
 ### Background
 
-The scale and spread of misinformation and disinformation is a growing challenge for humanitarian organisations. The Cameroon Red Cross (CRC) needed a way to both identify and address the rumours and misinformation that was arising on Covid-19.
+The scale and spread of misinformation and disinformation is a growing challenge for humanitarian organisations. [The Cameroon Red Cross (CRC)](https://www.icrc.org/en/where-we-work/africa/cameroon) needed a way to both identify and address the rumours and misinformation that was arising on Covid-19.
 
 The CRC collects community feedback, including rumours and beliefs about COVID-19, through a network of volunteers. After community feedback is collected, the CRC submits the full dataset to a data analyst based at the regional International Federation of the Red Cross (IFRC) cluster team who cleans the data and assigns labels to different categories of rumours, beliefs and observations.
 
