@@ -158,6 +158,10 @@ The `not_classified.xlsx` file is used as input to run the clustering algorthm i
 
 The `clusters.xlsx` file contains the unclassified comments broken into the clusters chosen by the clustering model. Each cluster in saved as a seperate sheet in the excel file.
 
+## Technical Specifications
+
+The model contained within this repository were incorporated within wider technical architecture within the Report \& Respond and Labelling tools. These tools were evaluated using high-fidelity prototypes, and a technical specification is enclosed within this repository `outputs/reports/technical-spec` which outlines a proposed implementation of the wider tool architecture and how the model can be integrated. There is also Adobe XD files included which show the prototype tools.
+
 ## Directory structure
 
 The repository has the following main directories:
@@ -182,6 +186,9 @@ The repository has the following main directories:
       ├── data
       │   └── data_for_modelling            <- Training and test sets saved here
       ├── models                            <- Saved models after running model_workflow
+      ├── reports
+      ├── └── technical-spec                <- Technical specifications for UI prototypes
+      ├──     └── xd-files                  <- Adobe XD files for two UI prototypes
       ...
 
 ```
