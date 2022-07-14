@@ -160,7 +160,7 @@ The `clusters.xlsx` file contains the unclassified comments broken into the clus
 
 ## Technical Specifications
 
-The model contained within this repository were incorporated within wider technical architecture within the Report \& Respond and Labelling tools. These tools were evaluated using high-fidelity prototypes, and a technical specification is enclosed within this repository `outputs/reports/technical-spec` which outlines a proposed implementation of the wider tool architecture and how the model can be integrated. There is also Adobe XD files included which show the prototype tools.
+The models contained within this repository were incorporated within wider technical architecture within the Report & Respond and Labelling tools. These tools were evaluated using high-fidelity prototypes, and a technical specification is enclosed within this repository `outputs/reports/technical-spec` which outlines a proposed implementation of the wider tool architecture and how the model can be integrated. There is also Adobe XD files included which show the prototype tools.
 
 ## Directory structure
 
