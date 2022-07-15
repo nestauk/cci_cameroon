@@ -74,19 +74,22 @@ In our initial inspection we identified a number of cases where rumours were ass
 To run the models you will first need to setup the project. Follow the steps below to do this:
 
 1. Meet the data science cookiecutter [requirements](http://nestauk.github.io/ds-cookiecutter/quickstart), in brief:
-  - Install: `git-crypt` and `conda`
-  - Have a Nesta AWS account configured with `awscli`
+
+- Install: `git-crypt` and `conda`
+- Have a Nesta AWS account configured with `awscli`
 
 2. Run:
+
 ```shell
 $ git clone https://github.com/nestauk/cci_cameroon
 $ cd cci_cameroon
 ```
 
 3. Run `make install` to configure the development environment:
-  - Setup the conda environment
-  - Configure pre-commit
-  - Configure metaflow to use AWS
+
+- Setup the conda environment
+- Configure pre-commit
+- Configure metaflow to use AWS
 
 4. Inside the project directory run `make inputs-pull` to access the data from S3 (for those with access to the Nesta S3 account)
 
@@ -141,8 +144,7 @@ $ python cci_cameroon/pipeline/model_workflow/classification_model_run.py
 $ python cci_cameroon/pipeline/model_workflow/clustering_model_run.py*
 ```
 
-*We have found that running this file on a Mac can sometimes encounter errors. If you experience this you can run a version of this file on Google Colab. The version that can be run on Google Colab is saved in the same folder and is called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run).
-
+\*We have found that running this file on a Mac can sometimes encounter errors. If you experience this you can run a version of this file on Google Colab. The version that can be run on Google Colab is saved in the same folder and is called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run).
 
 ### Final Outputs
 
@@ -192,5 +194,11 @@ The repository has the following main directories:
       ...
 
 ```
+
+## Contact and Contributions
+
+This repository is maintained by the Data Analytics Practice and Center team at [Nesta](https://www.nesta.org.uk/). The CCI Cameroon project is an ‘Accelerated Innovation Collaboration’ (AIC) which was delivered by Nesta’s Centre for Collective Intelligence Design (CCID) and Data Analytics Practice (DAP), UK HIH, Open Lab, [IFRC Red Crescent Societies - Solferino Academy](https://solferinoacademy.com/), [Cameroon Red Cross Society](https://www.icrc.org/en/where-we-work/africa/cameroon) and [Nepal Red Cross Society](https://nrcs.org/).
+
+We welcome any feedback and questions. Please email dataanalytics@nesta.org.uk.
 
 <!-- #endregion -->
