@@ -228,7 +228,7 @@ model_data[model_data.consensus == 0]["comment"].to_list()
 
 # %%
 # create a workbook and store the resulting clusters in it. Each cluster in a separate worksheet.
-with xlsxwriter.Workbook(f"{project_directory}/outputs/data/clusters.xlsx") as workbook:
+with xlsxwriter.Workbook(f"{project_directory}/clusters.xlsx") as workbook:
     for community in retained_clusters:
         worksheet = workbook.add_worksheet()
         for i in range(len(community)):
