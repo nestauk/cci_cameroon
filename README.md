@@ -30,7 +30,7 @@ The pipelines provided in this repository generates two outputs:
 1. A classification model that classfies rumours into existing categories
 2. A clustering model that finds new groups of rumours from a pool of rumours that cannot be classified
 
-Find out more about the project in our report (coming soon).
+Find out more about the project in our report [Localising AI for crisis response](https://www.nesta.org.uk/report/localising-ai/).
 
 ## Contents
 
