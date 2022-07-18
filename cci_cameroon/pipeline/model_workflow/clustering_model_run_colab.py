@@ -63,6 +63,7 @@ from clustering_helper_functions import (  # use the right location of the file 
     compute_community_silhuoette_scores,
     get_communities_with_threshold,
     generate_community_labels,
+    plot_clusters
 )
 import cluster_utils
 from sklearn.metrics import silhouette_samples, silhouette_score
