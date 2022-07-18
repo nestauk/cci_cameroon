@@ -25,7 +25,7 @@
 # Upload the following files to Google Colab
 # * `clustering_helper_function.py` found in `cci_cameroon/getters` folder
 # * `cluster_utils.py` found in `cci_cameroon/pipeline` folder
-# *  `not_classified.xlsx` found under `inputs/data` folder
+# *  `not_classified.xlsx` found under `outputs/data` folder
 #
 # Uncomment the pip install lines in the first cell
 # The output of this script is the clusters.xlsx file which contains the clusters of rumours created by the algorthm.
