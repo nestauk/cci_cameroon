@@ -141,10 +141,10 @@ Perform the following steps to run the models:
 
 ```shell
 $ python cci_cameroon/pipeline/model_workflow/classification_model_run.py
-$ python cci_cameroon/pipeline/model_workflow/clustering_model_run.py*
+$ python cci_cameroon/pipeline/model_workflow/clustering_model_run.py
 ```
 
-\*We have found that running this file on a Mac can sometimes encounter errors. If you experience this you can run a version of this file on Google Colab. The version that can be run on Google Colab is saved in the same folder and is called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run).
+We have found that running this file on a Mac can sometimes encounter errors. If you experience this you can run a version of this file on Google Colab. The version that can be run on Google Colab is saved in the same folder and is called `clustering_model_run_colab.py`. Use Jupytext to create a notebook version of this file and upload it to google colab (check the markdown in the notebook for instructions on how to run).
 
 ### Final Outputs
 
