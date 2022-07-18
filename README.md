@@ -109,12 +109,12 @@ The following files created from running the `data_splitting.py` file. These are
 
 These form the training and test sets used for modelling.
 
-- `X_train.csv`
-- `X_test.csv`
-- `y_train.csv`
-- `y_test.csv`
-- `no_response_train.csv`
-- `no_response_test.csv`
+- `X_train.xlsx`
+- `X_test.xlsx`
+- `y_train.xlsx`
+- `y_test.xlsx`
+- `no_response_train.xlsx`
+- `no_response_test.xlsx`
 
 ### Save and run the models
 
