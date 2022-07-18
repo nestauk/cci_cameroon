@@ -100,6 +100,7 @@ predictions, not_classified = mtr.create_pred_dfs(y_pred_knn, codes, X_test)
 # %%
 # Add folder if not already created
 Path(f"{project_directory}/outputs/models/").mkdir(parents=True, exist_ok=True)
+Path(f"{project_directory}/outputs/data/").mkdir(parents=True, exist_ok=True)
 
 # %%
 # Checks is files exist, if they do append data (removing duplicates). Otherwise save data to new file.
