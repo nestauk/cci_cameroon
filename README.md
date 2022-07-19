@@ -197,7 +197,7 @@ The repository has the following main directories:
 
 ## Contact and Contributions
 
-This repository is maintained by the Data Analytics Practice team at [Nesta](https://www.nesta.org.uk/). The CCI Cameroon project is an ‘Accelerated Innovation Collaboration’ (AIC) which was delivered by Nesta’s Centre for Collective Intelligence Design (CCID) and Data Analytics Practice (DAP), UK HIH (information@ukhih.org), [Open Lab](https://openlab.ncl.ac.uk/), [IFRC Red Crescent Societies - Solferino Academy](https://solferinoacademy.com/), [Cameroon Red Cross Society](https://www.ifrc.org/national-societies-directory/cameroon-red-cross-society) and [Nepal Red Cross Society](https://nrcs.org/).
+This repository is maintained by the Data Analytics Practice team at [Nesta](https://www.nesta.org.uk/). The CCI Cameroon project is an ‘Accelerated Innovation Collaboration’ (AIC) which was delivered by Nesta’s Centre for Collective Intelligence Design (CCID) and Data Analytics Practice (DAP), UK HIH (information@ukhih.org), [Open Lab](https://openlab.ncl.ac.uk/), [International Federation of Red Cross Red Crescent Societies - Solferino Academy](https://solferinoacademy.com/), [Cameroon Red Cross Society](https://www.ifrc.org/national-societies-directory/cameroon-red-cross-society) and [Nepal Red Cross Society](https://nrcs.org/).
 
 We welcome any feedback and questions. Please email dataanalytics@nesta.org.uk.
 
